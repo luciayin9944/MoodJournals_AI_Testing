@@ -1,40 +1,34 @@
-# MoodJournal_App
+# MoodJournals_AI_Testing
 
 
-This is a secure full-stack mood journaling application built with React (frontend), Flask (backend), and PostgreSQL (database). Users can register, log in, and manage their mood journals with full CRUD functionality. The backend offers robust APIs with authentication, secure access control, filtering, and analytical features such as word clouds and mood-tag categorization. It also integrates OpenAI to generate weekly mood summaries and personalized self-care suggestions.
+## Introduction
 
+MoodJournals AI Testing is a full-stack mood journaling application enhanced with an AI-focused testing framework. The application allows users to record daily moods and journal entries, visualize emotional trends, and receive AI-generated weekly summaries and personalized self-care suggestions powered by the OpenAI API.
 
-## 🔐 Features
-- JWT Authentication for secure access.
-- User-owned Journal Resource – only the owner can view, create, update, or delete their data.
-- Full CRUD operations for journal entries.
-- Weekly Analysis – automatically display mood scores and mood tag frequency for each month and week based on real-time dates.
-- AI-Powered Insights – uses OpenAI to generate weekly mood summaries and personalized self-care tips.
-- Interactive Month Selector – slider to review past months’ analyses within the current year.
-- Journal Word Cloud – shows the most frequently used words in monthly journal entries.
-- Date-based Filtering – filter journal entries by a custom date range.
-- Pagination - supports for large datasets.
+This project extends a functional React and Flask application into a practical AI Testing and QA Automation environment. In addition to validating traditional application behavior through UI and API testing, the project focuses on testing AI-powered features whose outputs are non-deterministic and cannot be reliably evaluated using simple expected-value assertions.
 
+The testing framework is designed to cover multiple layers of the system, including:
 
+UI Testing – Automating critical user workflows with Playwright, such as authentication, journal creation, editing, and navigation.
 
+API Testing – Validating Flask REST API endpoints, authentication, request validation, response schemas, and error handling.
 
-## 🧠 Tech Stack
-### 🔧 Backend
-- Flask: RESTful API Framework
-- Flask-SQLAlchemy: ORM for database interaction
-- Flask-Migrate: Handles database migrations
-- Marshmallow: Schema validation & serialization
-- JWT: Authentication
-- PostgreSQL/pgAdmin: Database & management
-- OpneAI API: AI-powered mood summaries and self-care tips
+AI Output Evaluation – Evaluating AI-generated mood summaries and self-care suggestions for relevance, consistency, safety, and adherence to expected output requirements.
 
-### 🎨 Frontend
-- React: Frontend library
-- Axios: For API requests
-- React Router: Client-side routing
-- Mantine: UI components & styling
-- Recharts: Data visualizations for analysis
-- Tabler Icons: Icon set for React
+AI Test Generation – Exploring the use of LLMs to generate test scenarios and edge cases from application requirements and API behavior.
+
+Regression Testing – Maintaining repeatable test suites to detect unintended behavior as the application evolves.
+
+Continuous Testing – Integrating automated tests with GitHub Actions so that tests can run automatically as part of the development workflow.
+
+The goal of this project is not only to test whether the application functions correctly, but also to explore the unique challenges of testing LLM-powered software, where quality must be evaluated across both deterministic system behavior and probabilistic AI responses.
+
+## Tech Stack
+
+Application: React, Vite, Mantine, Flask, PostgreSQL, SQLAlchemy, JWT, OpenAI API
+Testing: Playwright, Pytest, API Testing, AI/LLM Evaluation
+CI/CD: GitHub Actions
+
 
 
 
@@ -49,13 +43,13 @@ This is a secure full-stack mood journaling application built with React (fronte
 
 ```bash
    psql -U postgres
-   CREATE DATABASE moodjournal_db;
+   CREATE DATABASE moodjournal_testing_db;
 ```
 
  4. Update database configuration
     - In your Flask app config (or .env file), update the database URI:
 ```bash
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:<yourpassword>@localhost:5432/tracktrip_db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:<yourpassword>@localhost:5432/moodjournal_testing_db'
 ```
 
 - Replace <yourpassword> with your actual PostgreSQL password.
@@ -82,8 +76,8 @@ This is a secure full-stack mood journaling application built with React (fronte
  ### Clone the repository
 
 ```bash
-   git https://github.com/luciayin9944/MoodJournal_App.git
-   cd MoodJournal_App
+   git https://github.com/luciayin9944/MoodJournals_AI_Testing.git
+   cd MoodJournals_AI_Testing
 ```
 
 
