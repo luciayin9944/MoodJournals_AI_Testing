@@ -10,7 +10,10 @@ import json
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def get_ai_client():
+    """Create the provider client lazily so tests can replace it safely."""
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class AiSuggestion(Resource):
     @jwt_required()
@@ -59,7 +62,7 @@ class AiSuggestion(Resource):
         """
 
         try:
-            response = client.chat.completions.create(
+            response = get_ai_client().chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a supportive and insightful AI assistant focused on emotional well-being."},
@@ -76,8 +79,8 @@ class AiSuggestion(Resource):
             tips_text = json.dumps(tips)
         except json.JSONDecodeError:
             return {"error": "Failed to parse AI response as JSON."}, 500
-        except Exception as e:
-            return {"error": f"OpenAI API error: {str(e)}"}, 500
+        except Exception:
+            return {"error": "OpenAI API request failed."}, 500
 
         ## add new suggestion to Suggestion table
         new_suggestion = Suggestion(
@@ -119,4 +122,3 @@ class AiSuggestion(Resource):
             }, 200
         else:
             return {"error": "No suggestion found for this week."}, 404
-

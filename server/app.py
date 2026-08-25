@@ -13,9 +13,12 @@ from resources.journals import JournalList, WeeklyJournal, WeeklyAnalysis, HasJo
 
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    if test_config:
+        app.config.update(test_config)
 
     # Initialize extensions
     CORS(app)
@@ -44,15 +47,6 @@ def create_app():
     api.add_resource(MonthlyEntries, '/entries/<int:year>/<int:month>')
     api.add_resource(MonthlyEntriesAnalysis, '/entries/<int:year>/<int:month>/analysis')
     api.add_resource(MonthlyWordCloud, '/entries/<int:year>/<int:month>/word_cloud')
-      
+
 
     return app
-
-
-
-
-
-        
-
-
-        

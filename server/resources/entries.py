@@ -14,7 +14,7 @@ class NewEntry(Resource):
     @jwt_required()
     def post(self):
         curr_user_id = get_jwt_identity()
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         curr_date = data.get("entry_date")
 
         try:
@@ -35,24 +35,27 @@ class NewEntry(Resource):
         iso_year, iso_week, _ = entry_date.isocalendar()
 
         week_journal = Journal.query.filter_by(user_id=curr_user_id, year=iso_year, week_number=iso_week).first()
-        if not week_journal:
-            ## add new week_journal record to Journal table
-            week_journal = Journal(user_id=curr_user_id, year=iso_year,week_number=iso_week)
-            db.session.add(week_journal)
-            db.session.commit()
-        
-        ## add new entry to JournalEntry table
-        new_entry = JournalEntry(
-            journal_id = week_journal.id, 
-            entry_date = entry_date,
-            notes = data.get("notes"),
-            mood_score = data.get("mood_score"),
-            mood_tag = data.get("mood_tag")
-        )
-
         try:
+            if not week_journal:
+                week_journal = Journal(
+                    user_id=curr_user_id,
+                    year=iso_year,
+                    week_number=iso_week,
+                )
+                db.session.add(week_journal)
+
+            new_entry = JournalEntry(
+                journal=week_journal,
+                entry_date=entry_date,
+                notes=data.get("notes"),
+                mood_score=data.get("mood_score"),
+                mood_tag=data.get("mood_tag"),
+            )
             db.session.add(new_entry)
             db.session.commit()
+        except ValueError as e:
+            db.session.rollback()
+            return {"errors": [str(e)]}, 400
         except Exception as e:
             db.session.rollback()
             return {"error": str(e)}, 500
@@ -116,16 +119,17 @@ class Entry(Resource):
         if not entry:
             return {"error": "Journal not found"}, 404
         
-        data = request.get_json()
-        entry.entry_date = datetime.strptime(data["entry_date"], "%Y-%m-%d").date() if "entry_date" in data else entry.entry_date
-        entry.notes = data.get("notes", entry.notes)
-        entry.mood_score = data.get("mood_score", entry.mood_score)
-        entry.mood_tag = data.get("mood_tag", entry.mood_tag)
+        data = request.get_json(silent=True) or {}
 
-        try:   
+        try:
+            entry.entry_date = datetime.strptime(data["entry_date"], "%Y-%m-%d").date() if "entry_date" in data else entry.entry_date
+            entry.notes = data.get("notes", entry.notes)
+            entry.mood_score = data.get("mood_score", entry.mood_score)
+            entry.mood_tag = data.get("mood_tag", entry.mood_tag)
             db.session.commit()  
             return JournalEntrySchema().dump(entry), 200 
         except ValueError as e:
+            db.session.rollback()
             return {"errors": [str(e)]}, 400
         except Exception as e:
             db.session.rollback()

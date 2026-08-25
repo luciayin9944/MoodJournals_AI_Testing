@@ -50,7 +50,9 @@ jspm_packages
 # Virtual env metadata
 .venv
 .env
-/.env
+.env.*
+!.env.example
+!.env.test.example
 /venv
 
 # pytest cache
@@ -66,5 +68,6 @@ instance
 .DS_Store
 
 # Test coverage / reports
+.coverage
 coverage/
 htmlcov/

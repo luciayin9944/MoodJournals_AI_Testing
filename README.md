@@ -110,5 +110,34 @@ In another terminal, from the client directory:
 ```bash
     cd client
     npm install
-    npm run dev
+npm run dev
 ```
+
+## Phase 1 API Tests
+
+Install the application and test dependencies in the backend virtual environment:
+
+```bash
+pip install -r server/requirements.txt
+pip install -r server/requirements-test.txt
+```
+
+Run the isolated API suite from the repository root:
+
+```bash
+pytest server/tests
+```
+
+Tests use an in-memory database by default and never call the real OpenAI API. To run
+against PostgreSQL, copy `.env.test.example` to `.env.test`, use a dedicated test
+database, export the variables from that file, and then run the same command:
+
+```bash
+set -a
+source .env.test
+set +a
+pytest server/tests
+```
+
+Never set `TEST_DATABASE_URI` to a development or production database because the
+test fixture creates and drops its schema for every test.
