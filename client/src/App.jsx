@@ -5,7 +5,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import { AppShell, Button } from '@mantine/core';
 import '@mantine/core/styles.css';
 import Login from "./pages/Login.jsx";
-import Dashboard from "./pages/DashBoard.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import Header from "./components/Header.jsx";
 import Navbar from "./components/Navbar.jsx";
 import TodayJournal from "./pages/TodayJournal.jsx";
@@ -69,4 +69,3 @@ export default function App() {
     </AppShell>
   );
 }
-

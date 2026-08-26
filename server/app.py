@@ -48,5 +48,8 @@ def create_app(test_config=None):
     api.add_resource(MonthlyEntriesAnalysis, '/entries/<int:year>/<int:month>/analysis')
     api.add_resource(MonthlyWordCloud, '/entries/<int:year>/<int:month>/word_cloud')
 
+    @app.get('/health')
+    def health_check():
+        return {'status': 'ok'}, 200
 
     return app

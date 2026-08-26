@@ -141,3 +141,44 @@ pytest server/tests
 
 Never set `TEST_DATABASE_URI` to a development or production database because the
 test fixture creates and drops its schema for every test.
+
+## Phase 2 Playwright E2E Tests
+
+Install the frontend dependencies and the Chromium test browser once:
+
+```bash
+cd client
+npm install
+npx playwright install chromium
+```
+
+Run all seven E2E flows from the `client` directory:
+
+```bash
+npm run test:e2e
+```
+
+Playwright automatically resets deterministic test data, starts Flask and Vite,
+runs the Chromium tests with one worker, and stops both servers. By default it
+uses the isolated `/tmp/moodjournal_e2e_test.db` SQLite database. To use a dedicated
+PostgreSQL test database instead, set a URI whose database name contains `test`:
+
+```bash
+E2E_DATABASE_URI=postgresql://postgres:password@localhost:5432/moodjournal_e2e_test npm run test:e2e
+```
+
+Never point `E2E_DATABASE_URI` at development or production data. The E2E seed
+script intentionally drops and recreates all tables, and refuses database URIs
+that do not contain the word `test`.
+
+Useful Playwright commands:
+
+```bash
+npm run test:e2e:headed
+npm run test:e2e:ui
+npx playwright test tests/auth.spec.js
+npx playwright show-report
+```
+
+The AI suggestion browser flow uses a deterministic mocked response and never
+calls the real OpenAI API.
