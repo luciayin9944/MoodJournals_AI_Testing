@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
+from ai_validation import AIResponseValidationError, parse_and_validate_ai_response
 
 load_dotenv()
 
@@ -72,13 +73,24 @@ class AiSuggestion(Resource):
             )
             ai_result = response.choices[0].message.content.strip()
 
-            parsed = json.loads(ai_result)
-            summary = parsed.get("summary", "")
-            tips = parsed.get("self_care_tips", [])
+            # Previous inline parsing implementation retained for reference:
+            # parsed = json.loads(ai_result)
+            # summary = parsed.get("summary", "")
+            # tips = parsed.get("self_care_tips", [])
+
+            # New implementation validates the complete AI response contract.
+            validated = parse_and_validate_ai_response(ai_result)
+            summary = validated["summary"]
+            tips = validated["self_care_tips"]
             # tips_text = "\n".join(tips)
             tips_text = json.dumps(tips)
-        except json.JSONDecodeError:
-            return {"error": "Failed to parse AI response as JSON."}, 500
+
+        # Previous JSON-only error handling retained for reference:
+        # except json.JSONDecodeError:
+        #     return {"error": "Failed to parse AI response as JSON."}, 500
+        
+        except AIResponseValidationError:
+            return {"error": "AI response did not match the required format."}, 500
         except Exception:
             return {"error": "OpenAI API request failed."}, 500
 

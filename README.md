@@ -182,3 +182,23 @@ npx playwright show-report
 
 The AI suggestion browser flow uses a deterministic mocked response and never
 calls the real OpenAI API.
+
+## Phase 3A Deterministic AI Contract Tests
+
+Run only the deterministic AI response contract tests from the repository root:
+
+```bash
+source server/venv/bin/activate
+python -m pytest server/tests/ai -v
+```
+
+Run the complete backend regression suite:
+
+```bash
+python -m pytest server/tests -v
+```
+
+These tests validate JSON parsing, standard JSON code fences, required fields,
+field types, non-empty values, exactly three self-care tips, normalization, and
+database-aligned length limits. Provider responses are fixed local fixtures, so
+the suite does not require an OpenAI API key or network access.

@@ -1,0 +1,56 @@
+{
+  "valid_response": {
+    "summary": "The week gradually improved as stress gave way to calm and productivity.",
+    "self_care_tips": [
+      "Keep breaking work into manageable steps.",
+      "Protect time for rest after demanding tasks.",
+      "Notice and record signs of progress."
+    ]
+  },
+  "whitespace_response": {
+    "summary": "  The week became more balanced.  ",
+    "self_care_tips": [
+      "  Take a short walk.  ",
+      "  Keep a regular sleep routine.  ",
+      "  Reflect on one positive moment.  "
+    ]
+  },
+  "missing_summary": {
+    "self_care_tips": ["Tip one.", "Tip two.", "Tip three."]
+  },
+  "missing_tips": {
+    "summary": "A valid summary."
+  },
+  "empty_summary": {
+    "summary": "   ",
+    "self_care_tips": ["Tip one.", "Tip two.", "Tip three."]
+  },
+  "numeric_summary": {
+    "summary": 42,
+    "self_care_tips": ["Tip one.", "Tip two.", "Tip three."]
+  },
+  "wrong_tips_type": {
+    "summary": "A valid summary.",
+    "self_care_tips": "Take a walk."
+  },
+  "two_tips": {
+    "summary": "A valid summary.",
+    "self_care_tips": ["Tip one.", "Tip two."]
+  },
+  "four_tips": {
+    "summary": "A valid summary.",
+    "self_care_tips": ["Tip one.", "Tip two.", "Tip three.", "Tip four."]
+  },
+  "empty_tip": {
+    "summary": "A valid summary.",
+    "self_care_tips": ["Tip one.", "   ", "Tip three."]
+  },
+  "numeric_tip": {
+    "summary": "A valid summary.",
+    "self_care_tips": ["Tip one.", 2, "Tip three."]
+  },
+  "malformed_json": "{\"summary\": \"Missing closing brace\"",
+  "top_level_array": "[\"summary\", \"tips\"]",
+  "json_code_fence": "```json\n{\"summary\":\"A fenced summary.\",\"self_care_tips\":[\"Tip one.\",\"Tip two.\",\"Tip three.\"]}\n```",
+  "plain_code_fence": "```\n{\"summary\":\"A plain fenced summary.\",\"self_care_tips\":[\"Tip one.\",\"Tip two.\",\"Tip three.\"]}\n```"
+}
