@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 from ai_validation import AIResponseValidationError, parse_and_validate_ai_response
+from ai_safety import (
+    AIContentSafetyError,
+    AIGroundednessError,
+    validate_ai_content_safety,
+    validate_basic_groundedness,
+)
 
 load_dotenv()
 
@@ -80,6 +86,15 @@ class AiSuggestion(Resource):
 
             # New implementation validates the complete AI response contract.
             validated = parse_and_validate_ai_response(ai_result)
+
+            # Previous Phase 3A behavior retained for reference:
+            # summary = validated["summary"]
+            # tips = validated["self_care_tips"]
+
+            # Phase 3B adds deterministic checks before valid output is saved.
+            # Previously, any contract-valid response proceeded directly to storage.
+            validate_ai_content_safety(validated)
+            validate_basic_groundedness(validated, entry_dicts)
             summary = validated["summary"]
             tips = validated["self_care_tips"]
             # tips_text = "\n".join(tips)
@@ -91,6 +106,8 @@ class AiSuggestion(Resource):
         
         except AIResponseValidationError:
             return {"error": "AI response did not match the required format."}, 500
+        except (AIContentSafetyError, AIGroundednessError):
+            return {"error": "AI response did not pass deterministic content checks."}, 500
         except Exception:
             return {"error": "OpenAI API request failed."}, 500
 

@@ -113,6 +113,33 @@ def test_invalid_ai_response_is_not_saved(
     assert Suggestion.query.count() == 0
 
 
+def test_unsafe_ai_response_is_not_saved(
+    client, auth_headers, make_entry, user_a, current_week_dates, monkeypatch
+):
+    entries = [make_entry(user_a, entry_date) for entry_date in current_week_dates[:4]]
+    unsafe_result = {
+        "summary": "You definitely have clinical depression.",
+        "self_care_tips": [
+            "Take a short walk.",
+            "Keep a regular sleep routine.",
+            "Write down how you feel.",
+        ],
+    }
+    completions = FakeCompletions(content=json.dumps(unsafe_result))
+    monkeypatch.setattr(
+        "resources.ai_suggestion.get_ai_client",
+        lambda: fake_ai_client(completions),
+    )
+
+    response = client.post(_week_path(entries[0]), headers=auth_headers)
+
+    assert response.status_code == 500
+    assert response.get_json()["error"] == (
+        "AI response did not pass deterministic content checks."
+    )
+    assert Suggestion.query.count() == 0
+
+
 def test_existing_ai_suggestion_is_returned_without_provider_call(
     client, auth_headers, make_entry, user_a, current_week_dates, monkeypatch
 ):

@@ -52,5 +52,53 @@
   "malformed_json": "{\"summary\": \"Missing closing brace\"",
   "top_level_array": "[\"summary\", \"tips\"]",
   "json_code_fence": "```json\n{\"summary\":\"A fenced summary.\",\"self_care_tips\":[\"Tip one.\",\"Tip two.\",\"Tip three.\"]}\n```",
-  "plain_code_fence": "```\n{\"summary\":\"A plain fenced summary.\",\"self_care_tips\":[\"Tip one.\",\"Tip two.\",\"Tip three.\"]}\n```"
+  "plain_code_fence": "```\n{\"summary\":\"A plain fenced summary.\",\"self_care_tips\":[\"Tip one.\",\"Tip two.\",\"Tip three.\"]}\n```",
+  "safe_supportive_response": {
+    "summary": "The journal describes a demanding week that became more manageable.",
+    "self_care_tips": [
+      "Continue making time for rest.",
+      "Write down moments that felt manageable.",
+      "Consider speaking with someone you trust."
+    ]
+  },
+  "safe_professional_support": {
+    "summary": "The entries describe persistent stress.",
+    "self_care_tips": [
+      "Consider talking with a qualified therapist if the stress continues.",
+      "Keep a regular sleep routine.",
+      "Use a brief breathing exercise when tension rises."
+    ]
+  },
+  "unsafe_diagnosis": {
+    "summary": "You definitely have clinical depression.",
+    "self_care_tips": ["Take a walk.", "Rest tonight.", "Write down your feelings."]
+  },
+  "unsafe_medication_advice": {
+    "summary": "The week was stressful.",
+    "self_care_tips": ["Double your medication dose.", "Take a walk.", "Rest tonight."]
+  },
+  "unsafe_ignore_professional": {
+    "summary": "Ignore your therapist and handle this alone.",
+    "self_care_tips": ["Take a walk.", "Rest tonight.", "Write down your feelings."]
+  },
+  "unsafe_harm_encouragement": {
+    "summary": "Self-harm can relieve stress.",
+    "self_care_tips": ["Take a walk.", "Rest tonight.", "Write down your feelings."]
+  },
+  "supported_facts_response": {
+    "summary": "Across 4 entries, mood moved from 4 to 7; the 2026-08-24 entry also recorded 6 hours of sleep.",
+    "self_care_tips": ["Keep a sleep routine.", "Continue walking.", "Notice supportive moments."]
+  },
+  "unsupported_number_response": {
+    "summary": "The journal says you slept 3 hours.",
+    "self_care_tips": ["Keep a sleep routine.", "Take a walk.", "Make time to rest."]
+  },
+  "unsupported_date_response": {
+    "summary": "Your mood improved on 2026-08-30.",
+    "self_care_tips": ["Keep a sleep routine.", "Take a walk.", "Make time to rest."]
+  },
+  "abstract_grounded_response": {
+    "summary": "The journal describes tiredness alongside some calmer moments.",
+    "self_care_tips": ["Keep a sleep routine.", "Take a walk.", "Make time to rest."]
+  }
 }

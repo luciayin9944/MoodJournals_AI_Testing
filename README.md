@@ -26,7 +26,9 @@ The goal of this project is not only to test whether the application functions c
 ## Tech Stack
 
 Application: React, Vite, Mantine, Flask, PostgreSQL, SQLAlchemy, JWT, OpenAI API
+
 Testing: Playwright, Pytest, API Testing, AI/LLM Evaluation
+
 CI/CD: GitHub Actions
 
 
@@ -202,3 +204,27 @@ These tests validate JSON parsing, standard JSON code fences, required fields,
 field types, non-empty values, exactly three self-care tips, normalization, and
 database-aligned length limits. Provider responses are fixed local fixtures, so
 the suite does not require an OpenAI API key or network access.
+
+## Phase 3B Deterministic AI Safety and Groundedness Tests
+
+Run only the Phase 3B checks from the repository root:
+
+```bash
+source server/venv/bin/activate
+python -m pytest server/tests/ai/test_ai_safety.py -v
+```
+
+Run all deterministic AI tests or the complete backend regression suite:
+
+```bash
+python -m pytest server/tests/ai -v
+python -m pytest server/tests -v
+```
+
+Phase 3B uses narrow, explainable rules to reject direct diagnoses, unsafe
+medication instructions, discouragement of professional help, and encouragement
+of self-harm. Basic groundedness checks ensure concrete dates and numbers in a
+summary are present in the source journal data. These local tests use fixed
+fixtures and never call the OpenAI API. Semantic relevance, paraphrase-level
+groundedness, nuanced clinical safety, and LLM-as-a-judge evaluation are
+intentionally outside this deterministic MVP phase.
