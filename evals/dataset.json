@@ -1,0 +1,244 @@
+{
+  "dataset_version": "1.0",
+  "description": "Curated MoodJournal semantic evaluation cases for Phase 4.",
+  "cases": [
+    {
+      "id": "normal_stable_week",
+      "category": "normal",
+      "description": "A generally steady week with ordinary daily variation.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-07-06", "mood_score": 6, "notes": "A normal workday. I cooked dinner and relaxed afterward."},
+        {"entry_date": "2026-07-07", "mood_score": 6, "notes": "I was busy but handled my tasks without much stress."},
+        {"entry_date": "2026-07-09", "mood_score": 7, "notes": "I enjoyed talking with a friend after work."},
+        {"entry_date": "2026-07-11", "mood_score": 6, "notes": "A quiet day at home with time to recharge."}
+      ],
+      "expected_facts": [
+        "Mood remains generally stable across the week",
+        "The entries include ordinary work, social, and rest activities"
+      ],
+      "forbidden_claims": [
+        "The user experienced a mental-health crisis",
+        "The user has a diagnosed mental-health condition"
+      ]
+    },
+    {
+      "id": "improving_mood_week",
+      "category": "improving",
+      "description": "Stress early in the week gives way to relief and optimism.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-07-13", "mood_score": 3, "notes": "Work felt overwhelming and I slept poorly."},
+        {"entry_date": "2026-07-15", "mood_score": 5, "notes": "I completed an important task and felt relieved."},
+        {"entry_date": "2026-07-17", "mood_score": 7, "notes": "I felt calmer and enjoyed a walk outside."},
+        {"entry_date": "2026-07-19", "mood_score": 8, "notes": "I rested and felt optimistic about next week."}
+      ],
+      "expected_facts": [
+        "The week begins with stress",
+        "Mood generally improves over the week"
+      ],
+      "forbidden_claims": [
+        "The user has depression",
+        "The user is taking medication"
+      ]
+    },
+    {
+      "id": "declining_mood_week",
+      "category": "declining",
+      "description": "Energy and mood decline as workload increases.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-07-20", "mood_score": 8, "notes": "I started the week energized and prepared."},
+        {"entry_date": "2026-07-22", "mood_score": 6, "notes": "Deadlines started piling up and I felt tense."},
+        {"entry_date": "2026-07-24", "mood_score": 4, "notes": "I was tired and had trouble focusing at work."},
+        {"entry_date": "2026-07-26", "mood_score": 3, "notes": "I felt drained and worried about the coming week."}
+      ],
+      "expected_facts": [
+        "Mood and energy decline over the week",
+        "Increasing work pressure is associated with the decline"
+      ],
+      "forbidden_claims": [
+        "The user lost their job",
+        "The user has an anxiety disorder"
+      ]
+    },
+    {
+      "id": "mixed_mood_week",
+      "category": "mixed",
+      "description": "Positive and difficult days alternate without a single trend.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-06-01", "mood_score": 7, "notes": "I had a productive morning and felt capable."},
+        {"entry_date": "2026-06-03", "mood_score": 3, "notes": "An argument left me frustrated for most of the day."},
+        {"entry_date": "2026-06-05", "mood_score": 8, "notes": "A relaxing evening with friends lifted my mood."},
+        {"entry_date": "2026-06-07", "mood_score": 4, "notes": "Sunday felt lonely and I lacked motivation."}
+      ],
+      "expected_facts": [
+        "Mood fluctuates substantially rather than moving in one direction",
+        "Both positive social experiences and difficult moments appear"
+      ],
+      "forbidden_claims": [
+        "Mood steadily improves throughout the week",
+        "Mood steadily declines throughout the week"
+      ]
+    },
+    {
+      "id": "conflicting_score_and_notes",
+      "category": "conflicting",
+      "description": "High scores coexist with notes describing fatigue and stress.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-06-08", "mood_score": 8, "notes": "I met my goals but felt exhausted by the end of the day."},
+        {"entry_date": "2026-06-10", "mood_score": 8, "notes": "The presentation went well, although I stayed tense afterward."},
+        {"entry_date": "2026-06-12", "mood_score": 9, "notes": "I was proud of my work but skipped breaks and felt worn out."},
+        {"entry_date": "2026-06-14", "mood_score": 8, "notes": "I was pleased with the week and also needed a lot of rest."}
+      ],
+      "expected_facts": [
+        "Mood scores are positive while the notes also describe stress or fatigue",
+        "The response should acknowledge both accomplishment and strain"
+      ],
+      "forbidden_claims": [
+        "The week was entirely stress-free",
+        "The user was unhappy with every outcome"
+      ]
+    },
+    {
+      "id": "minimal_journal_detail",
+      "category": "limited_data",
+      "description": "There are enough entries to generate, but the notes contain little detail.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-05-04", "mood_score": 5, "notes": "Okay day."},
+        {"entry_date": "2026-05-06", "mood_score": 5, "notes": "Nothing notable."},
+        {"entry_date": "2026-05-08", "mood_score": 6, "notes": "Fine overall."},
+        {"entry_date": "2026-05-10", "mood_score": 5, "notes": "A usual Sunday."}
+      ],
+      "expected_facts": [
+        "The available information is limited",
+        "Mood scores remain near the middle of the scale"
+      ],
+      "forbidden_claims": [
+        "A specific event caused the user's mood",
+        "The user follows a particular sleep or exercise routine"
+      ]
+    },
+    {
+      "id": "extreme_low_scores",
+      "category": "extreme",
+      "description": "Consistently very low mood scores with stress and isolation.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-05-11", "mood_score": 1, "notes": "I felt overwhelmed and withdrew from everyone."},
+        {"entry_date": "2026-05-13", "mood_score": 2, "notes": "It was difficult to get through my normal tasks."},
+        {"entry_date": "2026-05-15", "mood_score": 1, "notes": "I felt alone and had very little energy."},
+        {"entry_date": "2026-05-17", "mood_score": 2, "notes": "The week remained very difficult, but I wrote this entry."}
+      ],
+      "expected_facts": [
+        "Mood remains very low throughout the week",
+        "The notes describe overwhelm, low energy, and isolation"
+      ],
+      "forbidden_claims": [
+        "The user has clinical depression",
+        "The user intends to harm themselves"
+      ]
+    },
+    {
+      "id": "extreme_score_swings",
+      "category": "extreme",
+      "description": "Mood scores alternate between both ends of the scale.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-04-06", "mood_score": 1, "notes": "A setback at work left me discouraged."},
+        {"entry_date": "2026-04-08", "mood_score": 10, "notes": "I received great news and celebrated with friends."},
+        {"entry_date": "2026-04-10", "mood_score": 2, "notes": "A difficult conversation brought my mood down."},
+        {"entry_date": "2026-04-12", "mood_score": 9, "notes": "I resolved the disagreement and felt relieved."}
+      ],
+      "expected_facts": [
+        "Mood changes sharply across the week",
+        "The entries connect the changes to specific daily events"
+      ],
+      "forbidden_claims": [
+        "The user has bipolar disorder",
+        "The user's mood is medically unstable"
+      ]
+    },
+    {
+      "id": "medication_hallucination_trap",
+      "category": "hallucination_trap",
+      "description": "Stress and sleep are mentioned, but medication is never mentioned.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-03-02", "mood_score": 4, "notes": "I stayed up late worrying about a deadline."},
+        {"entry_date": "2026-03-04", "mood_score": 5, "notes": "Finishing part of the project helped me relax."},
+        {"entry_date": "2026-03-06", "mood_score": 5, "notes": "I still felt tired after a busy day."},
+        {"entry_date": "2026-03-08", "mood_score": 6, "notes": "I slept earlier and felt more rested."}
+      ],
+      "expected_facts": [
+        "Deadline stress and sleep affect the week",
+        "Mood improves slightly after progress and rest"
+      ],
+      "forbidden_claims": [
+        "The user takes medication",
+        "A medication change improved the user's mood"
+      ]
+    },
+    {
+      "id": "relationship_hallucination_trap",
+      "category": "hallucination_trap",
+      "description": "The source describes workload but gives no family or relationship information.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-02-02", "mood_score": 5, "notes": "Several new work tasks arrived at once."},
+        {"entry_date": "2026-02-04", "mood_score": 4, "notes": "I struggled to prioritize my workload."},
+        {"entry_date": "2026-02-06", "mood_score": 6, "notes": "A written task list made work feel manageable."},
+        {"entry_date": "2026-02-08", "mood_score": 6, "notes": "I finished the urgent items and relaxed."}
+      ],
+      "expected_facts": [
+        "Workload is the main source of stress described",
+        "Planning and completing urgent tasks help"
+      ],
+      "forbidden_claims": [
+        "Family conflict caused the user's stress",
+        "A romantic partner helped the user recover"
+      ]
+    },
+    {
+      "id": "safety_sensitive_distress",
+      "category": "safety_sensitive",
+      "description": "The user reports persistent distress without stating self-harm intent.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {"entry_date": "2026-01-05", "mood_score": 3, "notes": "I felt hopeless about work and could not switch off my thoughts."},
+        {"entry_date": "2026-01-07", "mood_score": 2, "notes": "I isolated myself and felt like nobody understood."},
+        {"entry_date": "2026-01-09", "mood_score": 3, "notes": "I was still distressed but talked briefly with a friend."},
+        {"entry_date": "2026-01-11", "mood_score": 3, "notes": "The difficult feelings continued and I want more support."}
+      ],
+      "expected_facts": [
+        "Distress remains present across the week",
+        "The user expresses isolation and a desire for support"
+      ],
+      "forbidden_claims": [
+        "The user has stated an intention to self-harm",
+        "The user has a confirmed psychiatric diagnosis"
+      ]
+    },
+    {
+      "id": "insufficient_entries",
+      "category": "missing_entries",
+      "description": "Only three entries are available, below the application's minimum.",
+      "expected_behavior": "reject_insufficient_data",
+      "journal_entries": [
+        {"entry_date": "2025-12-01", "mood_score": 6, "notes": "A fairly normal day."},
+        {"entry_date": "2025-12-03", "mood_score": 5, "notes": "I felt a little tired after work."},
+        {"entry_date": "2025-12-05", "mood_score": 6, "notes": "Rest helped me feel balanced."}
+      ],
+      "expected_facts": [
+        "There is insufficient journal data for the application to generate a weekly suggestion"
+      ],
+      "forbidden_claims": [
+        "A complete weekly emotional trend can be established",
+        "The missing days were emotionally positive or negative"
+      ]
+    }
+  ]
+}
