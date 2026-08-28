@@ -34,5 +34,28 @@ python -m pytest evals/tests/test_eval_assets.py -v
 ```
 
 Phase 4A makes no OpenAI API calls and requires no additional dependencies.
-The evaluation runner, report generation, live candidate generation, and LLM
-judge belong to Phase 4B and Phase 4C and are not implemented yet.
+
+## Phase 4B offline runner
+
+Phase 4B reads fixed responses from `fixtures/candidate_responses.json`, reuses
+the Phase 3 contract, safety, and basic-groundedness validators, and writes a
+machine-readable report. It never calls OpenAI and does not semantically score
+`expected_facts`, `forbidden_claims`, relevance, or tone.
+
+Run all evaluation tests:
+
+```bash
+python -m pytest evals/tests -v
+```
+
+Run the offline evaluation from the repository root:
+
+```bash
+python -m evals.run_evals --mode fixtures --deterministic-only
+```
+
+Generated JSON reports are written to `evals/reports/` and ignored by Git. The
+process exits with code `0` when all cases pass and `1` when any case fails.
+
+Live candidate generation and the LLM judge belong to Phase 4C and are not
+implemented yet.

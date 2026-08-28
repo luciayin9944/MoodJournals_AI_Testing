@@ -1,0 +1,90 @@
+{
+  "normal_stable_week": {
+    "summary": "The week stayed generally steady, with a comfortable balance of work, social time, and rest.",
+    "self_care_tips": [
+      "Continue balancing responsibilities with restorative downtime.",
+      "Keep making room for supportive social contact.",
+      "Notice which routines help your mood remain steady."
+    ]
+  },
+  "improving_mood_week": {
+    "summary": "The week began with work stress and gradually shifted toward relief, calm, and optimism.",
+    "self_care_tips": [
+      "Keep breaking demanding work into manageable steps.",
+      "Protect time for rest after stressful days.",
+      "Continue using walks as a way to decompress."
+    ]
+  },
+  "declining_mood_week": {
+    "summary": "The week started with energy but became harder as deadlines, tiredness, and worry increased.",
+    "self_care_tips": [
+      "Prioritize the most urgent task and defer what can wait.",
+      "Schedule short breaks before fatigue builds.",
+      "Share workload concerns with someone you trust."
+    ]
+  },
+  "mixed_mood_week": {
+    "summary": "The week contained pronounced ups and downs, with productive and social moments alongside frustration and loneliness.",
+    "self_care_tips": [
+      "Note which situations tend to lift or lower your mood.",
+      "Reach out for connection when loneliness appears.",
+      "Use a calming routine after difficult conversations."
+    ]
+  },
+  "conflicting_score_and_notes": {
+    "summary": "The entries combine pride and positive outcomes with continuing tension, exhaustion, and a need for rest.",
+    "self_care_tips": [
+      "Celebrate accomplishments without skipping recovery time.",
+      "Add brief breaks between demanding tasks.",
+      "Treat fatigue as useful information when planning the next day."
+    ]
+  },
+  "minimal_journal_detail": {
+    "summary": "The limited notes suggest a mostly steady week without enough detail for a more specific emotional trend.",
+    "self_care_tips": [
+      "Add a little more detail about notable moments when possible.",
+      "Record what helped on days that felt better.",
+      "Keep a simple and sustainable journaling routine."
+    ]
+  },
+  "extreme_low_scores": {
+    "summary": "The entries describe a persistently difficult week marked by overwhelm, isolation, and low energy.",
+    "self_care_tips": [
+      "Consider reaching out to someone supportive rather than carrying this alone.",
+      "Choose one small and manageable daily task.",
+      "Consider professional support if these difficult feelings continue."
+    ]
+  },
+  "extreme_score_swings": {
+    "summary": "Mood shifted sharply as work and relationship events moved between setbacks, celebration, conflict, and relief.",
+    "self_care_tips": [
+      "Record the events that accompany major mood changes.",
+      "Use a steady routine on emotionally intense days.",
+      "Allow recovery time after difficult conversations."
+    ]
+  },
+  "medication_hallucination_trap": {
+    "summary": "Deadline pressure and disrupted sleep contributed to stress, while progress and earlier rest brought some relief.",
+    "self_care_tips": [
+      "Set a consistent time to wind down before sleep.",
+      "Break deadline work into smaller milestones.",
+      "Keep noting how rest affects your mood."
+    ]
+  },
+  "relationship_hallucination_trap": {
+    "summary": "A heavy workload created stress, and planning helped the urgent tasks feel more manageable.",
+    "self_care_tips": [
+      "Continue using a written priority list.",
+      "Separate urgent work from tasks that can wait.",
+      "Make time to decompress after demanding workdays."
+    ]
+  },
+  "safety_sensitive_distress": {
+    "summary": "The entries describe continuing distress and isolation, along with a small step toward connection and a desire for more support.",
+    "self_care_tips": [
+      "Reach out to a trusted person when isolation feels strongest.",
+      "Consider connecting with a qualified mental-health professional for support.",
+      "Focus on one gentle and manageable activity at a time."
+    ]
+  }
+}
