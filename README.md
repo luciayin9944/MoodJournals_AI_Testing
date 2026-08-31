@@ -185,13 +185,31 @@ npx playwright show-report
 The AI suggestion browser flow uses a deterministic mocked response and never
 calls the real OpenAI API.
 
-## Phase 3A Deterministic AI Contract Tests
+## Phase 3 Deterministic AI Tests
 
-Run only the deterministic AI response contract tests from the repository root:
+Phase 3 validates the AI response contract, deterministic safety rules, and
+basic groundedness before an AI result can be stored or evaluated further.
+
+The contract tests cover JSON parsing, standard JSON code fences, required
+fields, field types, non-empty values, exactly three self-care tips,
+normalization, and database-aligned length limits. Safety checks use narrow,
+explainable rules to reject direct diagnoses, unsafe medication instructions,
+discouragement of professional support, and encouragement of self-harm. Basic
+groundedness verifies that concrete dates and numbers in a summary also appear
+in the source journal entries.
+
+Run all deterministic AI tests from the repository root:
 
 ```bash
 source server/venv/bin/activate
 python -m pytest server/tests/ai -v
+```
+
+Run only contract or safety and groundedness tests:
+
+```bash
+python -m pytest server/tests/ai/test_ai_contract.py -v
+python -m pytest server/tests/ai/test_ai_safety.py -v
 ```
 
 Run the complete backend regression suite:
@@ -200,31 +218,57 @@ Run the complete backend regression suite:
 python -m pytest server/tests -v
 ```
 
-These tests validate JSON parsing, standard JSON code fences, required fields,
-field types, non-empty values, exactly three self-care tips, normalization, and
-database-aligned length limits. Provider responses are fixed local fixtures, so
-the suite does not require an OpenAI API key or network access.
+Phase 3 uses fixed local fixtures and mocked provider responses. It requires no
+OpenAI API key or network access.
 
-## Phase 3B Deterministic AI Safety and Groundedness Tests
+## Phase 4 AI Evaluation Framework
 
-Run only the Phase 3B checks from the repository root:
+Phase 4 evaluates qualities that deterministic assertions cannot fully measure,
+including semantic relevance, paraphrase-level groundedness, hallucination
+control, nuanced safety, and supportive tone.
+
+The framework includes:
+
+- A curated 12-case evaluation dataset with expected facts and forbidden claims.
+- A five-dimension, 1–5 scoring rubric with deterministic quality thresholds.
+- An offline fixture runner for repeatable contract, safety, and basic
+  groundedness regression checks.
+- Live candidate generation followed by an LLM-as-a-judge evaluation.
+- Case-level and dataset-level pass decisions with machine-readable JSON reports.
+
+Run all evaluation unit tests without calling OpenAI:
 
 ```bash
 source server/venv/bin/activate
-python -m pytest server/tests/ai/test_ai_safety.py -v
+python -m pytest evals/tests -v
 ```
 
-Run all deterministic AI tests or the complete backend regression suite:
+Run the offline fixture evaluation:
 
 ```bash
-python -m pytest server/tests/ai -v
-python -m pytest server/tests -v
+python -m evals.run_evals --mode fixtures --deterministic-only
 ```
 
-Phase 3B uses narrow, explainable rules to reject direct diagnoses, unsafe
-medication instructions, discouragement of professional help, and encouragement
-of self-harm. Basic groundedness checks ensure concrete dates and numbers in a
-summary are present in the source journal data. These local tests use fixed
-fixtures and never call the OpenAI API. Semantic relevance, paraphrase-level
-groundedness, nuanced clinical safety, and LLM-as-a-judge evaluation are
-intentionally outside this deterministic MVP phase.
+To run live evaluation, copy the safe template, add the real API key only to the
+ignored `.env.evals` file, and load it into the current terminal:
+
+```bash
+cp .env.evals.example .env.evals
+set -a
+source .env.evals
+set +a
+```
+
+Then explicitly select the generation and judge models:
+
+```bash
+python -m evals.run_evals \
+  --mode live \
+  --generation-model YOUR_GENERATION_MODEL \
+  --judge-model YOUR_JUDGE_MODEL
+```
+
+Live mode calls the real OpenAI API, requires network and model access, and
+incurs API usage costs. Generated reports are saved under `evals/reports/` and
+ignored by Git. See `evals/README.md` for the architecture, evaluation logic,
+commands, exit-code behavior, and secret-handling details.
