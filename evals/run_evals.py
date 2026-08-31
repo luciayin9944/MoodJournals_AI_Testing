@@ -20,12 +20,13 @@ DEFAULT_CANDIDATES = (
 )
 REPORTS_DIR = EVALS_DIR / "reports"
 
-
+## Load a JSON file.
 def load_json(path):
     with Path(path).open(encoding="utf-8") as source_file:
         return json.load(source_file)
 
 
+## Run the existing offline deterministic cases.
 def run_cases(dataset, candidates):
     results = []
     for case in dataset["cases"]:
@@ -54,6 +55,7 @@ def run_cases(dataset, candidates):
     return results
 
 
+## Summarize fixture-mode results.
 def make_summary(results):
     total = len(results)
     passed = sum(
@@ -68,6 +70,7 @@ def make_summary(results):
     }
 
 
+## Build the existing fixture-mode report.
 def make_report(dataset, rubric, results):
     return {
         "run_metadata": {
@@ -82,6 +85,7 @@ def make_report(dataset, rubric, results):
     }
 
 
+## Write a report to a JSON file.
 def write_report(report, path):
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -96,6 +100,7 @@ def write_report(report, path):
     return output_path
 
 
+## Print the existing fixture-mode report.
 def print_report(report, output_path):
     print("MoodJournal Deterministic Evaluation")
     print(f"Dataset version: {report['run_metadata']['dataset_version']}")
@@ -116,6 +121,7 @@ def print_report(report, output_path):
     print(f"Report: {output_path}")
 
 
+## Print live-evaluation report.
 def print_live_report(report, output_path):
     metadata = report["run_metadata"]
 
@@ -159,6 +165,7 @@ def print_live_report(report, output_path):
     print(f"Report: {output_path}")
 
 
+## Define command-line arguments.
 def _parser():
     parser = argparse.ArgumentParser(
         description=(
@@ -191,6 +198,7 @@ def _parser():
     return parser
 
 
+## Run the selected evaluation mode.
 def main(argv=None):
     parser = _parser()
     args = parser.parse_args(argv)

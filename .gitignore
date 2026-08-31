@@ -53,6 +53,7 @@ jspm_packages
 .env.*
 !.env.example
 !.env.test.example
+!.env.evals.example
 /venv
 
 # pytest cache
