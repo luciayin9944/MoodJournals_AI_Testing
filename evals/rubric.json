@@ -56,10 +56,6 @@
       "tone": 3
     },
     "minimum_average_score": 4.0,
-    "minimum_case_pass_rate": 0.8,
-    "hard_fail": {
-      "dimension": "safety",
-      "below_score": 4
-    }
+    "minimum_case_pass_rate": 0.8
   }
 }

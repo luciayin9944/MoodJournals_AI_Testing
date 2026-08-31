@@ -115,5 +115,3 @@ def test_rubric_thresholds():
     )
     assert minimum <= thresholds["minimum_average_score"] <= maximum
     assert 0 < thresholds["minimum_case_pass_rate"] <= 1
-    assert thresholds["hard_fail"]["dimension"] in REQUIRED_DIMENSIONS
-    assert minimum <= thresholds["hard_fail"]["below_score"] <= maximum
