@@ -120,6 +120,36 @@ The LLM produces semantic scores, but Python applies the fixed thresholds from
 `minimum_case_pass_rate`; otherwise it exits with code `1`. Invalid command-line
 configuration exits with code `2`.
 
+## Live smoke test
+
+`fixtures/live_smoke_dataset.json` contains one tracked example case for a
+lower-cost live integration check. It verifies the generation request,
+structured response validation, deterministic checks, LLM judge, rubric
+application, and report writing without running the full 12-case dataset.
+
+The smoke case is example test data, not a generated response or production user
+data. Replace the case locally, or pass another JSON file with `--dataset`, when
+testing a different scenario. Keep the same dataset fields so generation and the
+judge receive the required evidence and labels.
+
+After loading `.env.evals`, run:
+
+```bash
+python -m evals.run_evals \
+  --mode live \
+  --dataset evals/fixtures/live_smoke_dataset.json \
+  --generation-model gpt-4o-mini \
+  --judge-model gpt-4o-mini \
+  --report evals/reports/live-smoke-report.json
+```
+
+This single `generate` case normally makes one generation request and one judge
+request. Replace the model IDs if they are unavailable to your API project. An
+exit code of `0` means the case completed and passed the rubric. An exit code of
+`1` can mean the live pipeline completed but the candidate did not meet the
+quality thresholds; inspect the report to distinguish evaluation failure from a
+provider or pipeline error.
+
 ## Reports and secrets
 
 Generated reports are written to `evals/reports/`:

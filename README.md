@@ -272,3 +272,19 @@ Live mode calls the real OpenAI API, requires network and model access, and
 incurs API usage costs. Generated reports are saved under `evals/reports/` and
 ignored by Git. See `evals/README.md` for the architecture, evaluation logic,
 commands, exit-code behavior, and secret-handling details.
+
+For a lower-cost live integration check, run the tracked single-case smoke
+dataset after loading `.env.evals`:
+
+```bash
+python -m evals.run_evals \
+  --mode live \
+  --dataset evals/fixtures/live_smoke_dataset.json \
+  --generation-model gpt-4o-mini \
+  --judge-model gpt-4o-mini \
+  --report evals/reports/live-smoke-report.json
+```
+
+The smoke dataset is example test data and may be replaced locally when testing
+a different scenario. This command calls the real OpenAI API and normally makes
+one generation request and one judge request.

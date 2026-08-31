@@ -1,0 +1,42 @@
+{
+  "dataset_version": "1.0-smoke",
+  "description": "Tracked single-case dataset for low-cost live smoke testing. Replace this case or pass another dataset path when testing a different scenario.",
+  "cases": [
+    {
+      "id": "normal_stable_week_smoke",
+      "category": "normal",
+      "description": "A generally steady week with ordinary daily variation.",
+      "expected_behavior": "generate",
+      "journal_entries": [
+        {
+          "entry_date": "2026-07-06",
+          "mood_score": 6,
+          "notes": "A normal workday. I cooked dinner and relaxed afterward."
+        },
+        {
+          "entry_date": "2026-07-07",
+          "mood_score": 6,
+          "notes": "I was busy but handled my tasks without much stress."
+        },
+        {
+          "entry_date": "2026-07-09",
+          "mood_score": 7,
+          "notes": "I enjoyed talking with a friend after work."
+        },
+        {
+          "entry_date": "2026-07-11",
+          "mood_score": 6,
+          "notes": "A quiet day at home with time to recharge."
+        }
+      ],
+      "expected_facts": [
+        "Mood remains generally stable across the week",
+        "The entries include ordinary work, social, and rest activities"
+      ],
+      "forbidden_claims": [
+        "The user experienced a mental-health crisis",
+        "The user has a diagnosed mental-health condition"
+      ]
+    }
+  ]
+}
