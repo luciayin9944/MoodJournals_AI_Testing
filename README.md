@@ -9,27 +9,27 @@ This project extends a functional React and Flask application into a practical A
 
 The testing framework is designed to cover multiple layers of the system, including:
 
-UI Testing – Automating critical user workflows with Playwright, such as authentication, journal creation, editing, and navigation.
+- UI Testing – Automating critical user workflows with Playwright, such as authentication, journal creation, editing, and navigation.
 
-API Testing – Validating Flask REST API endpoints, authentication, request validation, response schemas, and error handling.
+- API Testing – Validating Flask REST API endpoints, authentication, request validation, response schemas, and error handling.
 
-AI Output Evaluation – Evaluating AI-generated mood summaries and self-care suggestions for relevance, consistency, safety, and adherence to expected output requirements.
+- AI Output Evaluation – Evaluating AI-generated mood summaries and self-care suggestions for relevance, consistency, safety, and adherence to expected output requirements.
 
-AI Test Generation – Exploring the use of LLMs to generate test scenarios and edge cases from application requirements and API behavior.
+- AI Test Design – Building curated datasets, edge cases, hallucination traps, and scoring rubrics for repeatable AI quality evaluation.
 
-Regression Testing – Maintaining repeatable test suites to detect unintended behavior as the application evolves.
+- Regression Testing – Re-running the backend API, deterministic AI, offline evaluation, and Playwright E2E suites to detect regressions whenever the application changes.
 
-Continuous Testing – Integrating automated tests with GitHub Actions so that tests can run automatically as part of the development workflow.
+- Continuous Testing – Automatically running deterministic regression suites on pushes and pull requests with GitHub Actions, while keeping cost-bearing live AI evaluations manually triggered.
 
 The goal of this project is not only to test whether the application functions correctly, but also to explore the unique challenges of testing LLM-powered software, where quality must be evaluated across both deterministic system behavior and probabilistic AI responses.
 
 ## Tech Stack
 
-Application: React, Vite, Mantine, Flask, PostgreSQL, SQLAlchemy, JWT, OpenAI API
+- Application: React, Vite, Mantine, Flask, PostgreSQL, SQLAlchemy, JWT, OpenAI API
 
-Testing: Playwright, Pytest, API Testing, AI/LLM Evaluation
+- Testing: Playwright, pytest, API Testing, AI/LLM Evaluation
 
-CI/CD: GitHub Actions
+- Continuous Integration: GitHub Actions
 
 
 
@@ -49,28 +49,27 @@ CI/CD: GitHub Actions
 ```
 
  4. Update database configuration
-    - In your Flask app config (or .env file), update the database URI:
-```bash
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:<yourpassword>@localhost:5432/moodjournal_testing_db'
+    - In `server/.env`, set the database URI:
+
+```text
+DATABASE_URI=postgresql://postgres:<yourpassword>@localhost:5432/moodjournal_testing_db
+JWT_SECRET_KEY=<your-local-secret>
 ```
 
-- Replace <yourpassword> with your actual PostgreSQL password.
+- Replace `<yourpassword>` and `<your-local-secret>` with local values. Never commit `server/.env`.
 
 
- ###  Prerequisite 2: Resgister OpenAI API key
+ ###  Prerequisite 2: Register an OpenAI API key
 
   1. Log in / Sign up at OpenAI. https://auth.openai.com/log-in
   2. Create an API Key: https://platform.openai.com/settings/organization/api-keys
-  3. Update your app configuration:
-     - In your Flask resources/ai_suggestion.py (or .env file), set the API key:
+  3. Add the key to `server/.env` only when running the application with live AI features:
 
-```bash
-    from openai import OpenAI
-    import os
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+```text
+OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-   - Replace OPENAI_API_KEY in your environment variables with your actual API key.
+- Deterministic API, AI, offline evaluation, and Playwright tests do not require this key.
   
 
 
@@ -78,7 +77,7 @@ CI/CD: GitHub Actions
  ### Clone the repository
 
 ```bash
-   git https://github.com/luciayin9944/MoodJournals_AI_Testing.git
+   git clone https://github.com/luciayin9944/MoodJournals_AI_Testing.git
    cd MoodJournals_AI_Testing
 ```
 
@@ -94,8 +93,6 @@ CI/CD: GitHub Actions
     export FLASK_APP=run.py
     export FLASK_ENV=development
 
-    flask db init
-    flask db migrate -m "initial migration"
     flask db upgrade head
     python seed.py
 ```
@@ -112,10 +109,13 @@ In another terminal, from the client directory:
 ```bash
     cd client
     npm install
-npm run dev
+    npm run dev
 ```
 
-## Phase 1 API Tests
+
+## Phases
+
+### Phase 1 API Tests
 
 Install the application and test dependencies in the backend virtual environment:
 
@@ -144,7 +144,7 @@ pytest server/tests
 Never set `TEST_DATABASE_URI` to a development or production database because the
 test fixture creates and drops its schema for every test.
 
-## Phase 2 Playwright E2E Tests
+### Phase 2 Playwright E2E Tests
 
 Install the frontend dependencies and the Chromium test browser once:
 
@@ -185,7 +185,7 @@ npx playwright show-report
 The AI suggestion browser flow uses a deterministic mocked response and never
 calls the real OpenAI API.
 
-## Phase 3 Deterministic AI Tests
+### Phase 3 Deterministic AI Tests
 
 Phase 3 validates the AI response contract, deterministic safety rules, and
 basic groundedness before an AI result can be stored or evaluated further.
@@ -221,7 +221,7 @@ python -m pytest server/tests -v
 Phase 3 uses fixed local fixtures and mocked provider responses. It requires no
 OpenAI API key or network access.
 
-## Phase 4 AI Evaluation Framework
+### Phase 4 AI Evaluation Framework
 
 Phase 4 evaluates qualities that deterministic assertions cannot fully measure,
 including semantic relevance, paraphrase-level groundedness, hallucination
@@ -288,3 +288,74 @@ python -m evals.run_evals \
 The smoke dataset is example test data and may be replaced locally when testing
 a different scenario. This command calls the real OpenAI API and normally makes
 one generation request and one judge request.
+
+### Phase 5 GitHub Actions Continuous Testing
+
+Phase 5 runs the existing test layers in GitHub Actions. It separates fast,
+deterministic checks from live, cost-bearing AI evaluation so that normal code
+changes can be validated automatically without exposing an API key or calling
+OpenAI.
+
+#### Deterministic CI
+
+The `.github/workflows/ci.yml` workflow runs automatically when code is pushed
+to `main` or when a pull request targets `main`. It can also be started manually
+from the GitHub Actions page.
+
+The workflow runs three jobs in parallel:
+
+- Backend API tests, Phase 3 deterministic AI tests, Phase 4 evaluation unit
+  tests, and the 12-case offline fixture evaluation.
+- Frontend lint and production build.
+- All seven Playwright Chromium E2E tests.
+
+The API tests use an isolated in-memory SQLite database. Playwright resets a
+dedicated SQLite E2E database and uses a mocked AI suggestion response. This
+workflow requires no `OPENAI_API_KEY`, makes no live OpenAI requests, and incurs
+no OpenAI API cost.
+
+Test reports, the frontend build, and Playwright failure evidence are uploaded
+as GitHub Actions artifacts. The deterministic jobs are suitable for required
+pull-request checks because a failure represents a repeatable application or
+test regression.
+
+#### Manual live AI smoke evaluation
+
+The `.github/workflows/live-ai-eval.yml` workflow is intentionally limited to
+manual `workflow_dispatch` runs. It evaluates the tracked one-case smoke dataset
+through the complete live pipeline:
+
+1. Generate a candidate response with OpenAI.
+2. Apply deterministic contract, safety, and groundedness checks.
+3. Score the candidate with an LLM-as-a-judge.
+4. Apply the fixed Phase 4 rubric thresholds.
+5. Upload the machine-readable JSON report as a GitHub Actions artifact.
+
+Before running it, add an Actions repository secret named `OPENAI_API_KEY`:
+
+```text
+Repository Settings
+→ Secrets and variables
+→ Actions
+→ New repository secret
+→ OPENAI_API_KEY
+```
+
+Run it from:
+
+```text
+GitHub repository
+→ Actions
+→ Live AI Evaluation
+→ Run workflow
+```
+
+The form allows the generation and judge model IDs to be selected. The default
+smoke run normally makes one generation request and one judge request, so it
+requires network and model access and incurs OpenAI API cost. Because it is
+manual, probabilistic, and cost-bearing, it does not run on every push or pull
+request and should not be configured as a required merge check.
+
+This phase implements continuous testing rather than application deployment. A
+deployment workflow can be added later after a hosting platform, production
+environment, database migration strategy, and rollback process are defined.
