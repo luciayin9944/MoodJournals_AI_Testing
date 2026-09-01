@@ -71,10 +71,10 @@ def seed_e2e_data():
     add_entry(delete_user, today, "Entry that will be deleted.", 6, "Calm")
 
     history_user = add_user("History User", "e2e-history@example.com")
-    add_entry(history_user, monday, "Current week history entry.", 8, "Productive")
+    add_entry(history_user, today, "Current week history entry.", 8, "Productive")
     add_entry(
         history_user,
-        monday - timedelta(days=7),
+        today - timedelta(days=7),
         "Previous week history entry.",
         6,
         "Relaxed",
