@@ -1,5 +1,3 @@
-# # seed.py
-
 from app import create_app
 from config import db
 from models import User, Journal, JournalEntry, Suggestion
@@ -21,7 +19,7 @@ def seed_data():
     db.session.add(user)
     db.session.commit()
 
-        ## === Week 1: January 1–4 ===
+    ## === Week 1: January 1–4 ===
     journal_1 = Journal(
         week_number=1,
         year=2026,
@@ -893,7 +891,7 @@ def seed_data():
         JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 8), mood_tag="Overwhelmed", mood_score=3, notes="Too much on my plate."),
         JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 9), mood_tag="Hopeful", mood_score=7, notes="Things might get better."),
         JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 10), mood_tag="Productive", mood_score=8, notes="Completed a major task."),
-        JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 12), mood_tag="Stressed", mood_score=5, notes="Preparing for next week."),
+        JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 11), mood_tag="Stressed", mood_score=5, notes="Preparing for next week."),
         JournalEntry(journal_id=journal_28.id, entry_date=date(2026, 7, 12), mood_tag="Relaxed", mood_score=7, notes="Rested and recovered.")
     ]
     db.session.add_all(entries_28)
@@ -983,7 +981,7 @@ def seed_data():
         JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 7, 28), mood_tag="Overwhelmed", mood_score=4, notes="Technical issues blocked my progress."),
         JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 7, 29), mood_tag="Hopeful", mood_score=6, notes="Found a workaround. Things are looking up."),
         JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 7, 30), mood_tag="Productive", mood_score=8, notes="Big breakthrough! Finished major task."),
-        JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 8, 31), mood_tag="Calm", mood_score=7, notes="Smooth day. Kept a good pace."),
+        JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 7, 31), mood_tag="Calm", mood_score=7, notes="Smooth day. Kept a good pace."),
         JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 8, 1), mood_tag="Relaxed", mood_score=5, notes="Didn't do much. Just rested."),
         JournalEntry(journal_id=journal_31.id, entry_date=date(2026, 8, 2), mood_tag="Calm", mood_score=8, notes="Reflected on the week. Felt proud.")
     ]
@@ -1001,7 +999,7 @@ def seed_data():
     db.session.add(suggestion_31)
     db.session.commit()
 
-    ## === Week 32 ===
+    ## === Week 32: August 3–9 ===
     journal_32 = Journal(
         week_number=32,
         year=2026,
@@ -1012,10 +1010,25 @@ def seed_data():
 
     entries_32 = [
         JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 3), mood_tag="Focused", mood_score=7, notes="Got into deep work mode. Finished key part of the project."),
+        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 4), mood_tag="Other", mood_score=4, notes="Practiced a project demo for a room of unfamiliar colleagues. My palms were damp and I kept imagining forgetting the opening."),
         JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 5), mood_tag="Tired", mood_score=5, notes="Didn't sleep well. Had to push through the day."),
-        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 6), mood_tag="Excited", mood_score=8, notes="Pushed through a long day of coding. The project is nearly done, feeling tired but excited to see it coming together.")
+        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 6), mood_tag="Excited", mood_score=8, notes="Pushed through a long day of coding. The project is nearly done, feeling tired but excited to see it coming together."),
+        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 7), mood_tag="Relaxed", mood_score=7, notes="Went swimming after work. Project worries were still there, but the movement helped my shoulders loosen and my thoughts slow down."),
+        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 8), mood_tag="Normal", mood_score=6, notes="Bought groceries, replaced a kitchen light bulb, and sorted the mail. Nothing stood out emotionally."),
+        JournalEntry(journal_id=journal_32.id, entry_date=date(2026, 8, 9), mood_tag="Happy", mood_score=8, notes="Cooked lunch with family and played guitar afterward. Enjoyed the company and having time for a hobby.")
     ]
     db.session.add_all(entries_32)
+
+    suggestion_32 = Suggestion(
+        journal_id=journal_32.id,
+        summary="Project progress brought satisfaction alongside unease about presenting and tiredness after poor sleep. Swimming helped ease tension, and family time and guitar brought enjoyment after an ordinary Saturday.",
+        selfcare_tips=json.dumps([
+            "1. Use a short rehearsal plan for the demo, with a stopping time that protects sleep.",
+            "2. Keep swimming or another enjoyable form of movement available after demanding workdays.",
+            "3. Make room for family time and guitar alongside the project."
+        ])
+    )
+    db.session.add(suggestion_32)
     db.session.commit()
 
 
@@ -1118,7 +1131,7 @@ def seed_data():
     db.session.commit()
 
 
-        ## === Week 36 ===
+    ## === Week 36: August 31–September 6 ===
     journal_36 = Journal(
         week_number=36,
         year=2026,
@@ -1138,7 +1151,19 @@ def seed_data():
     ]
     db.session.add_all(entries_36)
 
-    ## === Week 37 ===
+    suggestion_36 = Suggestion(
+        journal_id=journal_36.id,
+        summary="A new project began with motivation and progress. Job searching brought anxiety and pressure, while late work on both commitments left you tired. A break on Sunday helped you feel more hopeful.",
+        selfcare_tips=json.dumps([
+            "1. Set separate, manageable periods for project work and job applications.",
+            "2. Choose an evening stopping time so both commitments leave room for rest.",
+            "3. Keep taking breaks that help you regain perspective during the job search."
+        ])
+    )
+    db.session.add(suggestion_36)
+    db.session.commit()
+
+    ## === Week 37: September 7–13 ===
     journal_37 = Journal(
         week_number=37,
         year=2026,
@@ -1149,11 +1174,88 @@ def seed_data():
 
     entries_37 = [
         JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 7), mood_tag="Nervous", mood_score=5, notes="Prepared for interviews, but job rejections still in mind."),
-        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 8), mood_tag="Overwhelmed", mood_score=4, notes="Balancing project work and job search feels exhausting. Need better routine.")
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 8), mood_tag="Overwhelmed", mood_score=4, notes="Balancing project work and job search feels exhausting. Need better routine."),
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 9), mood_tag="Anxious", mood_score=4, notes="A technical interview is tomorrow. I kept rehearsing explanations because I was afraid of going blank when someone questioned my work."),
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 10), mood_tag="Relieved", mood_score=7, notes="Finished the interview. I still do not know the outcome, but my breathing settled once the conversation was over."),
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 11), mood_tag="Stressed", mood_score=4, notes="Back-to-back meetings left little time for a report due this afternoon. The unfinished work kept running through my mind after dinner."),
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 12), mood_tag="Joyful", mood_score=8, notes="Hiked with friends and stopped for a picnic. Laughing together on the trail lifted my mood after the demanding week."),
+        JournalEntry(journal_id=journal_37.id, entry_date=date(2026, 9, 13), mood_tag="Normal", mood_score=6, notes="Did laundry, renewed a library book, and cooked dinner. My mood stayed fairly even throughout the day.")
     ]
     db.session.add_all(entries_37)
 
-    
+    suggestion_37 = Suggestion(
+        journal_id=journal_37.id,
+        summary="Interview preparation and competing commitments brought nervousness and overwhelm. Tension eased after the interview, although meetings and a report deadline added pressure. Hiking with friends lifted your mood before a neutral Sunday.",
+        selfcare_tips=json.dumps([
+            "1. Prepare a few interview examples, then allow yourself to stop rehearsing.",
+            "2. Protect a work block for deadlines when the meeting calendar is full.",
+            "3. Keep outdoor time with friends in your routine when it feels restorative."
+        ])
+    )
+    db.session.add(suggestion_37)
+    db.session.commit()
+
+    ## === Week 38: September 14–20 ===
+    journal_38 = Journal(
+        week_number=38,
+        year=2026,
+        user_id=user.id
+    )
+    db.session.add(journal_38)
+    db.session.commit()
+
+    entries_38 = [
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 14), mood_tag="Other", mood_score=4, notes="An important project review with senior managers is coming up. My stomach tightened whenever I pictured their questions, and I reread my slides late into the night."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 15), mood_tag="Tired", mood_score=3, notes="Only slept five hours after working late on the review slides. I reread simple messages several times and had little energy for anything after work."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 16), mood_tag="Overwhelmed", mood_score=3, notes="Meetings took up most of the day while new requests arrived before yesterday's tasks were finished. I could not find a clear place to start."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 17), mood_tag="Relaxed", mood_score=7, notes="Went for a gentle run after work. The upcoming review still mattered to me, but I stopped replaying every possible question for a while."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 18), mood_tag="Happy", mood_score=8, notes="Had dinner with family and laughed over old stories. Felt connected and more cheerful on the way home."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 19), mood_tag="Excited", mood_score=7, notes="Put one of my paintings in a small community display. Felt proud to share a hobby, though I also wondered how visitors would respond."),
+        JournalEntry(journal_id=journal_38.id, entry_date=date(2026, 9, 20), mood_tag="Calm", mood_score=7, notes="Spent the afternoon learning a song on guitar. Focusing on the melody gave me a satisfying break from thinking about work.")
+    ]
+    db.session.add_all(entries_38)
+
+    suggestion_38 = Suggestion(
+        journal_id=journal_38.id,
+        summary="Anticipating an important review brought unease, and late preparation reduced sleep and energy. Meetings and unfinished tasks added overwhelm. Running, family connection, painting, and guitar brought relief and enjoyment, with some uncertainty about sharing your art.",
+        selfcare_tips=json.dumps([
+            "1. Set a preparation limit before important reviews to leave enough time for sleep.",
+            "2. Identify one next task when meetings and new requests crowd the day.",
+            "3. Preserve the movement, family time, and hobbies that offered welcome breaks."
+        ])
+    )
+    db.session.add(suggestion_38)
+    db.session.commit()
+
+    ## === Week 39: September 21–24 (partial week) ===
+    journal_39 = Journal(
+        week_number=39,
+        year=2026,
+        user_id=user.id
+    )
+    db.session.add(journal_39)
+    db.session.commit()
+
+    entries_39 = [
+        JournalEntry(journal_id=journal_39.id, entry_date=date(2026, 9, 21), mood_tag="Nervous", mood_score=4, notes="Agreed to introduce a panel at a community event tomorrow. Thinking about holding the microphone in front of the audience made my heart race."),
+        JournalEntry(journal_id=journal_39.id, entry_date=date(2026, 9, 22), mood_tag="Relieved", mood_score=7, notes="Gave the short introduction with my notes nearby. After the first few sentences I felt more comfortable, and I enjoyed listening to the panel afterward."),
+        JournalEntry(journal_id=journal_39.id, entry_date=date(2026, 9, 23), mood_tag="Other", mood_score=4, notes="A deadline moved forward while two overdue requests were still waiting. I kept switching between my inbox and the task list, unable to switch off in the evening."),
+        JournalEntry(journal_id=journal_39.id, entry_date=date(2026, 9, 24), mood_tag="Happy", mood_score=8, notes="Took a walk with a friend after work and talked openly about the busy week. The unfinished tasks still bothered me, but I felt lighter and less alone.")
+    ]
+    db.session.add_all(entries_39)
+
+    suggestion_39 = Suggestion(
+        journal_id=journal_39.id,
+        summary="Across these four days, anticipation of public speaking brought nerves that eased during the event. An earlier deadline and overdue requests made it difficult to switch off. A walk and conversation with a friend lifted your mood even though work concerns remained.",
+        selfcare_tips=json.dumps([
+            "1. Keep brief notes available for speaking engagements, since they helped during the introduction.",
+            "2. Clarify priorities when deadlines move while other requests remain unfinished.",
+            "3. Make time for walks and supportive conversations alongside ongoing work concerns."
+        ])
+    )
+    db.session.add(suggestion_39)
+    db.session.commit()
+
     print("✅ Database seeded successfully.")
 
 if __name__ == "__main__":
@@ -1161,7 +1263,6 @@ if __name__ == "__main__":
     with app.app_context():
         reset_database()
         seed_data()
-
 
 
 
