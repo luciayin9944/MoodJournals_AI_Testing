@@ -3,6 +3,7 @@
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from marshmallow import Schema, fields, validate
+from pgvector.sqlalchemy import VECTOR
 from config import db, bcrypt
 from datetime import datetime
 
@@ -67,6 +68,8 @@ class JournalEntry(db.Model):
     notes = db.Column(db.Text)
     mood_score = db.Column(db.Integer, nullable=False)
     mood_tag = db.Column(db.String, nullable=False, server_default='Other')
+    # Future embedding generation must use this same dimension.
+    embedding = db.Column(VECTOR(1536), nullable=True)
 
     journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'))
     journal = db.relationship('Journal', back_populates='journal_entries')
