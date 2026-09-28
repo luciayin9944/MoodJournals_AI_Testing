@@ -113,171 +113,120 @@ In another terminal, from the client directory:
 ```
 
 
-## Phases
+## Testing Setup
 
-### Phase 1 API Tests
+Run the following commands from the repository root unless a different directory is specified.
 
-Install the application and test dependencies in the backend virtual environment:
+### Install Test Dependencies
 
-```bash
-pip install -r server/requirements.txt
-pip install -r server/requirements-test.txt
-```
-
-Run the isolated API suite from the repository root:
+Create the backend virtual environment and install the application and test dependencies:
 
 ```bash
-pytest server/tests
+python3 -m venv server/venv
+server/venv/bin/python -m pip install --upgrade pip
+server/venv/bin/python -m pip install -r server/requirements.txt
+server/venv/bin/python -m pip install -r server/requirements-test.txt
 ```
 
-Tests use an in-memory database by default and never call the real OpenAI API. To run
-against PostgreSQL, copy `.env.test.example` to `.env.test`, use a dedicated test
-database, export the variables from that file, and then run the same command:
-
-```bash
-set -a
-source .env.test
-set +a
-pytest server/tests
-```
-
-Never set `TEST_DATABASE_URI` to a development or production database because the
-test fixture creates and drops its schema for every test.
-
-### Phase 2 Playwright E2E Tests
-
-Install the frontend dependencies and the Chromium test browser once:
+Install the frontend dependencies and Chromium:
 
 ```bash
 cd client
-npm install
+npm ci
 npx playwright install chromium
+cd ..
 ```
 
-Run all seven E2E flows from the `client` directory:
+### Run Deterministic Tests
+
+Run the backend API and deterministic AI tests:
 
 ```bash
-npm run test:e2e
+server/venv/bin/python -m pytest server/tests -v
 ```
 
-Playwright automatically resets deterministic test data, starts Flask and Vite,
-runs the Chromium tests with one worker, and stops both servers. By default it
-uses the isolated `/tmp/moodjournal_e2e_test.db` SQLite database. To use a dedicated
-PostgreSQL test database instead, set a URI whose database name contains `test`:
+Run the AI evaluation unit tests:
 
 ```bash
-E2E_DATABASE_URI=postgresql://postgres:password@localhost:5432/moodjournal_e2e_test npm run test:e2e
-```
-
-Never point `E2E_DATABASE_URI` at development or production data. The E2E seed
-script intentionally drops and recreates all tables, and refuses database URIs
-that do not contain the word `test`.
-
-Useful Playwright commands:
-
-```bash
-npm run test:e2e:headed
-npm run test:e2e:ui
-npx playwright test tests/auth.spec.js
-npx playwright show-report
-```
-
-The AI suggestion browser flow uses a deterministic mocked response and never
-calls the real OpenAI API.
-
-### Phase 3 Deterministic AI Tests
-
-Phase 3 validates the AI response contract, deterministic safety rules, and
-basic groundedness before an AI result can be stored or evaluated further.
-
-The contract tests cover JSON parsing, standard JSON code fences, required
-fields, field types, non-empty values, exactly three self-care tips,
-normalization, and database-aligned length limits. Safety checks use narrow,
-explainable rules to reject direct diagnoses, unsafe medication instructions,
-discouragement of professional support, and encouragement of self-harm. Basic
-groundedness verifies that concrete dates and numbers in a summary also appear
-in the source journal entries.
-
-Run all deterministic AI tests from the repository root:
-
-```bash
-source server/venv/bin/activate
-python -m pytest server/tests/ai -v
-```
-
-Run only contract or safety and groundedness tests:
-
-```bash
-python -m pytest server/tests/ai/test_ai_contract.py -v
-python -m pytest server/tests/ai/test_ai_safety.py -v
-```
-
-Run the complete backend regression suite:
-
-```bash
-python -m pytest server/tests -v
-```
-
-Phase 3 uses fixed local fixtures and mocked provider responses. It requires no
-OpenAI API key or network access.
-
-### Phase 4 AI Evaluation Framework
-
-Phase 4 evaluates qualities that deterministic assertions cannot fully measure,
-including semantic relevance, paraphrase-level groundedness, hallucination
-control, nuanced safety, and supportive tone.
-
-The framework includes:
-
-- A curated 12-case evaluation dataset with expected facts and forbidden claims.
-- A five-dimension, 1–5 scoring rubric with deterministic quality thresholds.
-- An offline fixture runner for repeatable contract, safety, and basic
-  groundedness regression checks.
-- Live candidate generation followed by an LLM-as-a-judge evaluation.
-- Case-level and dataset-level pass decisions with machine-readable JSON reports.
-
-Run all evaluation unit tests without calling OpenAI:
-
-```bash
-source server/venv/bin/activate
-python -m pytest evals/tests -v
+server/venv/bin/python -m pytest evals/tests -v
 ```
 
 Run the offline fixture evaluation:
 
 ```bash
-python -m evals.run_evals --mode fixtures --deterministic-only
+server/venv/bin/python -m evals.run_evals \
+  --mode fixtures \
+  --deterministic-only
 ```
 
-To run live evaluation, copy the safe template, add the real API key only to the
-ignored `.env.evals` file, and load it into the current terminal:
+Run the frontend lint and production build:
+
+```bash
+cd client
+npm run lint
+npm run build
+cd ..
+```
+
+Run the Playwright E2E tests:
+
+```bash
+cd client
+npm run test:e2e
+cd ..
+```
+
+The deterministic test suites use isolated test data and mocked or fixture-based AI responses. They do not require `OPENAI_API_KEY` and do not call the live OpenAI API.
+
+By default:
+
+- Pytest uses an in-memory SQLite database.
+- Playwright uses `/tmp/moodjournal_e2e_test.db`.
+- The Playwright AI suggestion flow uses a mocked response.
+
+To run pytest against PostgreSQL, copy the test environment template and configure a dedicated test database:
+
+```bash
+cp .env.test.example .env.test
+```
+
+Update `TEST_DATABASE_URI` in `.env.test`, then load the environment and run the tests:
+
+```bash
+set -a
+source .env.test
+set +a
+
+server/venv/bin/python -m pytest server/tests -v
+```
+
+
+### Run the Optional Live AI Smoke Evaluation
+
+Copy the live evaluation environment template:
 
 ```bash
 cp .env.evals.example .env.evals
+```
+
+Add a real OpenAI API key to the ignored `.env.evals` file:
+
+```text
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+Load the environment variables:
+
+```bash
 set -a
 source .env.evals
 set +a
 ```
 
-Then explicitly select the generation and judge models:
+Run the single-case live smoke evaluation:
 
 ```bash
-python -m evals.run_evals \
-  --mode live \
-  --generation-model YOUR_GENERATION_MODEL \
-  --judge-model YOUR_JUDGE_MODEL
-```
-
-Live mode calls the real OpenAI API, requires network and model access, and
-incurs API usage costs. Generated reports are saved under `evals/reports/` and
-ignored by Git. See `evals/README.md` for the architecture, evaluation logic,
-commands, exit-code behavior, and secret-handling details.
-
-For a lower-cost live integration check, run the tracked single-case smoke
-dataset after loading `.env.evals`:
-
-```bash
-python -m evals.run_evals \
+server/venv/bin/python -m evals.run_evals \
   --mode live \
   --dataset evals/fixtures/live_smoke_dataset.json \
   --generation-model gpt-4o-mini \
@@ -285,63 +234,55 @@ python -m evals.run_evals \
   --report evals/reports/live-smoke-report.json
 ```
 
-The smoke dataset is example test data and may be replaced locally when testing
-a different scenario. This command calls the real OpenAI API and normally makes
-one generation request and one judge request.
+Live evaluation requires:
 
-### Phase 5 GitHub Actions Continuous Testing
+- Network access
+- A valid `OPENAI_API_KEY`
+- Access to the selected models
+- OpenAI API usage costs
 
-Phase 5 runs the existing test layers in GitHub Actions. It separates fast,
-deterministic checks from live, cost-bearing AI evaluation so that normal code
-changes can be validated automatically without exposing an API key or calling
-OpenAI.
+Generated reports are saved under `evals/reports/` and are ignored by Git.
 
-#### Deterministic CI
+### GitHub Actions
 
-The `.github/workflows/ci.yml` workflow runs automatically when code is pushed
-to `main` or when a pull request targets `main`. It can also be started manually
-from the GitHub Actions page.
+The deterministic CI workflow is defined in:
 
-The workflow runs three jobs in parallel:
+```text
+.github/workflows/ci.yml
+```
 
-- Backend API tests, Phase 3 deterministic AI tests, Phase 4 evaluation unit
-  tests, and the 12-case offline fixture evaluation.
-- Frontend lint and production build.
-- All seven Playwright Chromium E2E tests.
+It runs automatically when:
 
-The API tests use an isolated in-memory SQLite database. Playwright resets a
-dedicated SQLite E2E database and uses a mocked AI suggestion response. This
-workflow requires no `OPENAI_API_KEY`, makes no live OpenAI requests, and incurs
-no OpenAI API cost.
+- Code is pushed to `main`.
+- A pull request targets `main`.
+- It is manually started from GitHub Actions.
 
-Test reports, the frontend build, and Playwright failure evidence are uploaded
-as GitHub Actions artifacts. The deterministic jobs are suitable for required
-pull-request checks because a failure represents a repeatable application or
-test regression.
+It runs:
 
-#### Manual live AI smoke evaluation
+- Backend API and deterministic AI tests
+- AI evaluation unit tests
+- Offline fixture evaluation
+- Frontend lint and production build
+- Playwright Chromium E2E tests
 
-The `.github/workflows/live-ai-eval.yml` workflow is intentionally limited to
-manual `workflow_dispatch` runs. It evaluates the tracked one-case smoke dataset
-through the complete live pipeline:
+The deterministic workflow does not require `OPENAI_API_KEY` and does not incur OpenAI API costs.
 
-1. Generate a candidate response with OpenAI.
-2. Apply deterministic contract, safety, and groundedness checks.
-3. Score the candidate with an LLM-as-a-judge.
-4. Apply the fixed Phase 4 rubric thresholds.
-5. Upload the machine-readable JSON report as a GitHub Actions artifact.
+The live AI smoke workflow is defined in:
 
-Before running it, add an Actions repository secret named `OPENAI_API_KEY`:
+```text
+.github/workflows/live-ai-eval.yml
+```
+
+Before running it, add `OPENAI_API_KEY` under:
 
 ```text
 Repository Settings
 → Secrets and variables
 → Actions
 → New repository secret
-→ OPENAI_API_KEY
 ```
 
-Run it from:
+Run the workflow from:
 
 ```text
 GitHub repository
@@ -350,12 +291,7 @@ GitHub repository
 → Run workflow
 ```
 
-The form allows the generation and judge model IDs to be selected. The default
-smoke run normally makes one generation request and one judge request, so it
-requires network and model access and incurs OpenAI API cost. Because it is
-manual, probabilistic, and cost-bearing, it does not run on every push or pull
-request and should not be configured as a required merge check.
+The live AI workflow is manually triggered because it calls the real OpenAI API, incurs usage costs, and may produce probabilistic results.
 
-This phase implements continuous testing rather than application deployment. A
-deployment workflow can be added later after a hosting platform, production
-environment, database migration strategy, and rollback process are defined.
+
+
