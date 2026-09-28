@@ -54,9 +54,8 @@ class Journal(db.Model):
 
     @validates("year")
     def validate_year(self, key, value):
-        current_year = datetime.now().year
-        if value < current_year:
-            raise ValueError("Year must be the current year or later.")
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 9999:
+            raise ValueError("Year must be an integer between 1 and 9999.")
         return value
 
 
