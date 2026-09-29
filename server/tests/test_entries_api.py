@@ -1,9 +1,12 @@
-from datetime import date
+from datetime import date, timedelta
+from unittest.mock import Mock
 
 import pytest
 
 from config import db
 from models import Journal, JournalEntry
+from services import embedding_service
+from services.exceptions import ProviderTimeoutError
 
 
 def test_create_entry_returns_created_entry(client, auth_headers, valid_entry_payload):
@@ -115,3 +118,121 @@ def test_user_cannot_access_another_users_entry(
     response = request_method(f"/entries/{entry.id}", **kwargs)
 
     assert response.status_code == 404
+
+
+@pytest.fixture()
+def embedded_entry(make_entry, user_a):
+    entry = make_entry(user_a)
+    entry.embedding = [0.25] * 1536
+    db.session.commit()
+    return entry
+
+
+@pytest.fixture()
+def embedder(monkeypatch):
+    mock = Mock(return_value=[0.5] * 1536)
+    monkeypatch.setattr(embedding_service, "generate_entry_embedding", mock)
+    return mock
+
+
+@pytest.mark.parametrize("field,value", [
+    ("notes", "A better day."),
+    ("mood_score", 9),
+    ("mood_tag", "Joyful"),
+])
+def test_patch_embedding(client, auth_headers, embedded_entry, embedder, field, value):
+    entry_id = embedded_entry.id
+
+    response = client.patch(
+        f"/entries/{entry_id}", json={field: value}, headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    embedder.assert_called_once_with(embedded_entry)
+    db.session.remove()
+    stored = db.session.get(JournalEntry, entry_id)
+    assert getattr(stored, field) == value
+    assert list(stored.embedding) == pytest.approx([0.5] * 1536)
+
+
+@pytest.mark.parametrize("change", ["same", "date", "empty"])
+def test_patch_keeps_embedding(
+    client, auth_headers, embedded_entry, embedder, change
+):
+    entry_id = embedded_entry.id
+    if change == "same":
+        data = {field: getattr(embedded_entry, field)
+                for field in ("notes", "mood_score", "mood_tag")}
+    elif change == "date":
+        data = {"entry_date": (embedded_entry.entry_date + timedelta(days=1)).isoformat()}
+    else:
+        data = {}
+
+    response = client.patch(f"/entries/{entry_id}", json=data, headers=auth_headers)
+
+    assert response.status_code == 200
+    embedder.assert_not_called()
+    db.session.remove()
+    assert list(db.session.get(JournalEntry, entry_id).embedding) == pytest.approx([0.25] * 1536)
+
+
+@pytest.mark.parametrize("failure", ["provider", "storage"])
+def test_patch_embedding_failure(
+    client, auth_headers, embedded_entry, embedder, failure
+):
+    entry_id = embedded_entry.id
+    if failure == "provider":
+        embedder.side_effect = ProviderTimeoutError("Timed out")
+    else:
+        # A wrong-sized vector causes the second database commit to fail.
+        embedder.return_value = [0.5]
+
+    response = client.patch(
+        f"/entries/{entry_id}", json={"notes": "Saved despite embedding failure."},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    embedder.assert_called_once()
+    db.session.remove()
+    stored = db.session.get(JournalEntry, entry_id)
+    assert stored.notes == "Saved despite embedding failure."
+    assert stored.embedding is None
+
+
+def test_patch_invalid(client, auth_headers, embedded_entry, embedder):
+    entry_id = embedded_entry.id
+    old_notes = embedded_entry.notes
+
+    response = client.patch(
+        f"/entries/{entry_id}",
+        json={"notes": "Should roll back.", "mood_score": 11},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 400
+    embedder.assert_not_called()
+    db.session.remove()
+    stored = db.session.get(JournalEntry, entry_id)
+    assert stored.notes == old_notes
+    assert list(stored.embedding) == pytest.approx([0.25] * 1536)
+
+
+@pytest.mark.parametrize("change", ["null", "different"])
+def test_patch_ignores_date(
+    client, auth_headers, embedded_entry, embedder, change
+):
+    entry_id = embedded_entry.id
+    old_date = embedded_entry.entry_date
+    new_date = None if change == "null" else (old_date + timedelta(days=1)).isoformat()
+
+    response = client.patch(
+        f"/entries/{entry_id}", json={"entry_date": new_date}, headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    embedder.assert_not_called()
+    db.session.remove()
+    stored = db.session.get(JournalEntry, entry_id)
+    assert stored.entry_date == old_date
+    assert list(stored.embedding) == pytest.approx([0.25] * 1536)

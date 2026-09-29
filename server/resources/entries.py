@@ -1,12 +1,15 @@
 ## entries.py
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, current_app
 from flask_restful import Resource
 from config import db
 from models import *  
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from datetime import date
 from sqlalchemy import extract
+from services.exceptions import ProviderError
+from services import embedding_service
+from datetime import date, datetime
 
 
 ## '/entries'
@@ -35,6 +38,7 @@ class NewEntry(Resource):
         iso_year, iso_week, _ = entry_date.isocalendar()
 
         week_journal = Journal.query.filter_by(user_id=curr_user_id, year=iso_year, week_number=iso_week).first()
+        
         try:
             if not week_journal:
                 week_journal = Journal(
@@ -44,6 +48,7 @@ class NewEntry(Resource):
                 )
                 db.session.add(week_journal)
 
+            # 1. Save the journal entry first
             new_entry = JournalEntry(
                 journal=week_journal,
                 entry_date=entry_date,
@@ -59,6 +64,20 @@ class NewEntry(Resource):
         except Exception as e:
             db.session.rollback()
             return {"error": str(e)}, 500
+        
+        # 2. Generate and save the embedding to db separately
+        try:
+            embedding = embedding_service.generate_entry_embedding(new_entry)
+        except ProviderError:
+            embedding = None
+
+        if embedding is not None:
+            try:
+                new_entry.embedding = embedding
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                current_app.logger.exception("Could not save entry embedding")
         
         result = JournalEntrySchema().dump(new_entry)
         return result, 201
@@ -122,19 +141,44 @@ class Entry(Resource):
         data = request.get_json(silent=True) or {}
 
         try:
-            entry.entry_date = datetime.strptime(data["entry_date"], "%Y-%m-%d").date() if "entry_date" in data else entry.entry_date
+            embedding_changed = any(
+                            field in data and data[field] != getattr(entry, field)
+                            for field in ("notes", "mood_score", "mood_tag")
+                        )
+            
+            # entry.entry_date = datetime.strptime(data["entry_date"], "%Y-%m-%d").date() if "entry_date" in data else entry.entry_date
             entry.notes = data.get("notes", entry.notes)
             entry.mood_score = data.get("mood_score", entry.mood_score)
             entry.mood_tag = data.get("mood_tag", entry.mood_tag)
-            db.session.commit()  
-            return JournalEntrySchema().dump(entry), 200 
+
+            ## The old embedding no longer represents the updated entry.
+            if embedding_changed:
+                entry.embedding = None
+            db.session.commit()
+    
+            # Generate a new embedding，then save the new embedding separately
+            if embedding_changed:
+                try: 
+                    new_embedding = embedding_service.generate_entry_embedding(entry)
+                except ProviderError:
+                    new_embedding = None
+
+                if new_embedding is not None:
+                    try:
+                        entry.embedding = new_embedding
+                        db.session.commit()
+                    except Exception:
+                        db.session.rollback()
+                        current_app.logger.exception("Could not save entry embedding")
+            return JournalEntrySchema().dump(entry), 200
+
         except ValueError as e:
             db.session.rollback()
             return {"errors": [str(e)]}, 400
         except Exception as e:
             db.session.rollback()
             return {"error": str(e)}, 500
-
+        
 
 ## '/entries/today'
 class TodayEntry(Resource):
