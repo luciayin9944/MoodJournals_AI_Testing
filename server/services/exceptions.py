@@ -19,3 +19,7 @@ class ProviderUnavailableError(ProviderError):
 
 class ProviderRequestError(ProviderError):
     """The provider rejected the request as invalid."""
+
+
+class ProviderResponseError(ProviderError):
+    """The provider returned a response that failed application validation."""
