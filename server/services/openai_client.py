@@ -30,11 +30,9 @@ def get_openai_client():
     return OpenAI(api_key=api_key.strip(), timeout=timeout, max_retries=retries)
 
 
-"""
-    Run a provider request in an app context and close the client afterward.
-    The SDK handles retries; operation should contain only the provider request.
-"""
+
 def call_openai(operation):
+    """Run an OpenAI request and translate provider errors."""
     try:
         with get_openai_client() as client:
             return operation(client)
