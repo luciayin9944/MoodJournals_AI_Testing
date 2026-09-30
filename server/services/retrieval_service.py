@@ -55,4 +55,28 @@ def retrieval_entries(user_id, question, time_range, top_k=10):
     
 
     
+# ## for testing 
+# def main():
+#     from app import create_app
 
+#     app = create_app()
+
+#     with app.app_context():
+#         entries = retrieval_entries(
+#             user_id=1,
+#             question="What situations usually make me feel anxious?",
+#             time_range="all_time",
+#             top_k=5,
+#         )
+
+#         print(f"Found {len(entries)} entries.\n")
+
+#         for entry in entries:
+#             print(f"ID: {entry.id} | Date: {entry.entry_date}")
+#             print(f"Mood: {entry.mood_tag} | Score: {entry.mood_score}")
+#             print(entry.notes)
+#             print()
+
+
+# if __name__ == "__main__":
+#     main()
