@@ -7,7 +7,7 @@ from flask import current_app
 
 
 
-# Convert entry objects into text for LLM.
+# Convert entry objects into text for the LLM.
 def build_context(entries):
     context_list = []
 
@@ -24,7 +24,7 @@ def build_context(entries):
     return "\n\n".join(context_list)
 
 
-# Convert entry objects into structured data for API.
+# Convert entry objects into structured data for the API.
 def build_sources(entries):
     sources = []
 
@@ -40,7 +40,8 @@ def build_sources(entries):
     return sources
 
 
-# Ask the LLM to generate an answer and patterns.
+
+# Ask the LLM to generate an answer and patterns from the retrieved entries.
 def generate_answer(question, entries):
     context = build_context(entries)
 
@@ -94,6 +95,7 @@ The patterns list may be empty. Do not include a sources field.
         },
     ]
 
+    # call_openai passes its configured client into this function.
     def make_request(client):
         return client.chat.completions.create(
             model=model,
@@ -101,12 +103,14 @@ The patterns list may be empty. Do not include a sources field.
             temperature=0.2,
         )
    
+    # Send the request through the shared provider helper.
     response = call_openai(make_request)
     ai_result = response.choices[0].message.content
-
+    
     if not ai_result:
         raise AIResponseValidationError("AI response was empty.")
 
+    # Convert the JSON response text into a Python dictionary.
     try:
         generated = json.loads(ai_result)
     except json.JSONDecodeError as error:
@@ -119,9 +123,10 @@ The patterns list may be empty. Do not include a sources field.
         "patterns": generated["patterns"],
     }
 
-
-# Coordinate retrieval, answer generation, and source construction for the API.    
+    
+# Coordinate retrieval, answer generation, and source construction for the API.
 def analyze_mood(user_id, question, time_range, top_k=10):
+    # Find relevant entries belonging to this user within the selected time range.
     entries = retrieval_entries(
         user_id=user_id,
         question=question,
@@ -129,6 +134,7 @@ def analyze_mood(user_id, question, time_range, top_k=10):
         top_k=top_k
     )
 
+    # Skip answer generation when retrieval returns no entries.
     if not entries:
         return {
             "answer": "There is not enough journal evidence to answer this question.",
@@ -137,6 +143,7 @@ def analyze_mood(user_id, question, time_range, top_k=10):
         }
 
     result = generate_answer(question, entries)
+    # Build sources from the same database entries used to generate the answer.
     sources = build_sources(entries)
 
     return {

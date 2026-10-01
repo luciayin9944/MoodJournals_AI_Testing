@@ -19,8 +19,8 @@ load_dotenv()
 
 
 def get_ai_client():
-    """Create the provider client lazily so tests can replace it safely."""
     return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 class AiSuggestion(Resource):
     @jwt_required()
@@ -31,7 +31,6 @@ class AiSuggestion(Resource):
         if not week_journal:
             return {"message": "No journal found for this week."}, 404
         
-        # if suggestion exist, return result. Don't generate new suggestions!
         suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
         if suggestion:
             result = SuggestionSchema().dump(suggestion)
@@ -42,7 +41,7 @@ class AiSuggestion(Resource):
         if len(entries) < 4:
             return {"message": "Not enough journal entries to generate summary (minimum 4 required)."}, 400
 
-        ##WRONG; entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
+        ##WRONG: entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
         entry_dicts = JournalEntrySchema(many=True).dump(entries)
         combined_text = "\n".join(
             [f"{entry['entry_date']}: {entry['notes']}" for entry in entry_dicts if entry.get("notes")]
@@ -70,39 +69,28 @@ class AiSuggestion(Resource):
 
         try:
             response = get_ai_client().chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a supportive and insightful AI assistant focused on emotional well-being."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7
             )
+
             ai_result = response.choices[0].message.content.strip()
-
-            # Previous inline parsing implementation retained for reference:
-            # parsed = json.loads(ai_result)
-            # summary = parsed.get("summary", "")
-            # tips = parsed.get("self_care_tips", [])
-
-            # New implementation validates the complete AI response contract.
             validated = parse_and_validate_ai_response(ai_result)
 
-            # Previous Phase 3A behavior retained for reference:
-            # summary = validated["summary"]
-            # tips = validated["self_care_tips"]
-
-            # Phase 3B adds deterministic checks before valid output is saved.
-            # Previously, any contract-valid response proceeded directly to storage.
             validate_ai_content_safety(validated)
             validate_basic_groundedness(validated, entry_dicts)
             summary = validated["summary"]
             tips = validated["self_care_tips"]
-            # tips_text = "\n".join(tips)
             tips_text = json.dumps(tips)
 
-        # Previous JSON-only error handling retained for reference:
-        # except json.JSONDecodeError:
-        #     return {"error": "Failed to parse AI response as JSON."}, 500
+            # parsed = json.loads(ai_result)
+            # summary = parsed.get("summary", "")
+            # tips = parsed.get("self_care_tips", [])
+
+
         
         except AIResponseValidationError:
             return {"error": "AI response did not match the required format."}, 500
@@ -111,7 +99,6 @@ class AiSuggestion(Resource):
         except Exception:
             return {"error": "OpenAI API request failed."}, 500
 
-        ## add new suggestion to Suggestion table
         new_suggestion = Suggestion(
             journal_id = week_journal.id, 
             summary = summary,
