@@ -1,8 +1,8 @@
 // App.jsx
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { AppShell, Button } from '@mantine/core';
+import { AppShell } from '@mantine/core';
 import '@mantine/core/styles.css';
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -12,6 +12,7 @@ import TodayJournal from "./pages/TodayJournal.jsx";
 import axios from 'axios';
 import JournalList from "./pages/JournalList.jsx";
 import WeeklySummary from "./pages/WeeklySummary.jsx";
+import LongTermInsights from "./pages/LongTermInsights.jsx";
 
 
 export default function App() {
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/entries/today" element={<TodayJournal />} />
           <Route path="/journals" element={<JournalList />} />
           <Route path="/journals/:year/:week_number/summary" element={<WeeklySummary />} />
+          <Route path="/insights/long-term" element={<LongTermInsights />} />
           
         </Routes>
       </AppShell.Main>

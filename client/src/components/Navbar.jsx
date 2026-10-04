@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <Stack
-      h={200}
+      h={400}
       bg="var(--mantine-color-body)"
       align="stretch"
       justify="center"
@@ -46,11 +46,11 @@ export default function Navbar() {
         variant="outline"
         color="grey"
         size="xl"
-        onClick={() => navigate(`/journals/${currentYear}/${currentWeek}/summary`)}
+        onClick={() => navigate(`/journals/${currentYear}/week${currentWeek}/summary`)}
         style={{ display: 'flex', alignItems: 'center', gap: 8 }}
       >
         <IconRobot size={20} />
-        Weekly AI Insights
+        Weekly Insights
       </Button>
       <Button
         variant="outline"
@@ -61,6 +61,16 @@ export default function Navbar() {
       >
         <IconNotebook size={20} />
         All Journals
+      </Button>
+      <Button
+        variant="outline"
+        color="grey"
+        size="xl"
+        onClick={() => navigate(`/insights/long-term`)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+      >
+        <IconRobot size={20} />
+        Long-term Insights
       </Button>
     </Stack>
   );

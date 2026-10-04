@@ -11,6 +11,7 @@ export default defineConfig({
       '/login': 'http://localhost:5000',
       '/journals': 'http://localhost:5000',
       '/entries': 'http://localhost:5000',
+      '/analysis': 'http://localhost:5000',
     }
   }
 })
