@@ -46,7 +46,8 @@ export default function Navbar() {
         variant="outline"
         color="grey"
         size="xl"
-        onClick={() => navigate(`/journals/${currentYear}/week${currentWeek}/summary`)}
+        // onClick={() => navigate(`/journals/${currentYear}/week${currentWeek}/summary`)}
+        onClick={() => navigate(`/journals/${currentYear}/${currentWeek}/summary`)}
         style={{ display: 'flex', alignItems: 'center', gap: 8 }}
       >
         <IconRobot size={20} />
