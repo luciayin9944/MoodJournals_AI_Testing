@@ -1256,6 +1256,23 @@ def seed_data():
     db.session.add(suggestion_39)
     db.session.commit()
 
+    ## === Week 40: September 28–October 4 (three entries, no suggestion) ===
+    journal_40 = Journal(
+        week_number=40,
+        year=2026,
+        user_id=user.id
+    )
+    db.session.add(journal_40)
+    db.session.commit()
+
+    entries_40 = [
+        JournalEntry(journal_id=journal_40.id, entry_date=date(2026, 9, 28), mood_tag="Stressed", mood_score=4, notes="Several tasks were due before the end of the month, and new requests kept interrupting my plan. I was still thinking about unfinished work during dinner."),
+        JournalEntry(journal_id=journal_40.id, entry_date=date(2026, 9, 30), mood_tag="Relieved", mood_score=7, notes="Talked through priorities with a teammate and finished the most urgent task. The rest of the list was still there, but having a clear next step helped me feel less overwhelmed."),
+        JournalEntry(journal_id=journal_40.id, entry_date=date(2026, 10, 2), mood_tag="Happy", mood_score=8, notes="Met a friend for a walk in the park after work. Talking and spending time outside helped me unwind, and I came home feeling lighter than I had in the morning.")
+    ]
+    db.session.add_all(entries_40)
+    db.session.commit()
+
     print("✅ Database seeded successfully.")
 
 if __name__ == "__main__":
