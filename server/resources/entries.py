@@ -117,10 +117,19 @@ class Entry(Resource):
         if not entry:
             return {"error": "Journal not found"}, 404
         try:
+            # Count this week's entries, excluding the one being deleted.
+            remaining_count = JournalEntry.query.filter(
+                JournalEntry.journal_id == entry.journal_id,
+                JournalEntry.id != entry.id,
+            ).count()
+            if remaining_count < 4 and entry.journal.suggestion:
+                db.session.delete(entry.journal.suggestion)
+
             db.session.delete(entry)
             db.session.commit()
             return {"message": "Journal deleted successfully"}, 200
         except Exception as e:
+            db.session.rollback()
             return {"error": str(e)}, 500
         
     

@@ -31,15 +31,16 @@ class AiSuggestion(Resource):
         if not week_journal:
             return {"message": "No journal found for this week."}, 404
         
-        suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
-        if suggestion:
-            result = SuggestionSchema().dump(suggestion)
-            return result, 200
-        
         entries = JournalEntry.query.filter_by(journal_id=week_journal.id).order_by(JournalEntry.entry_date.asc()).all()
 
         if len(entries) < 4:
             return {"message": "Not enough journal entries to generate summary (minimum 4 required)."}, 400
+
+        # The minimum also applies when a summary is already saved.
+        suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
+        if suggestion:
+            result = SuggestionSchema().dump(suggestion)
+            return result, 200
 
         ##WRONG: entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
         entry_dicts = JournalEntrySchema(many=True).dump(entries)
@@ -131,7 +132,8 @@ class AiSuggestion(Resource):
             ).first()
         )
 
-        if suggestion:
+        # Do not display a summary left behind by the old deletion logic.
+        if suggestion and JournalEntry.query.filter_by(journal_id=suggestion.journal_id).count() >= 4:
             return {
                 "summary": suggestion.summary,
                 "selfcare_tips": suggestion.selfcare_tips
