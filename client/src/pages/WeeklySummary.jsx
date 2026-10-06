@@ -7,19 +7,27 @@ import { Alert, Title, Text, Stack, Button, Loader, Flex, Container, Card} from 
 import AiSuggestionForm from "../components/AiSuggestionForm";
 import WeeklyAnalysis from "../components/WeeklyAnalysis";
 import dayjs from 'dayjs';
+import isoWeek from "dayjs/plugin/isoWeek";
+
+dayjs.extend(isoWeek);
 
 
 export default function WeeklySummary() {
     const [suggestion, setSuggestion] = useState(null);
     const [isSuggestionLoading, setIsSuggestionLoading] = useState(true);
     const [isEntriesLoading, setIsEntriesLoading] = useState(true);
+    const [isRegenerating, setIsRegenerating] = useState(false)
 
     const [error, setError] = useState(null);
-    const [showForm, setShowForm] = useState(false);
-    const [hasEntries, setHasEntries] = useState(false);  
+    const [hasEntries, setHasEntries] = useState(false);
+    const navigate = useNavigate();  
 
     const { year, week_number } = useParams();
-    const navigate = useNavigate();
+    const today = dayjs();
+
+    const isCurrentWeek =
+        Number(year) === today.isoWeekYear() &&
+        Number(week_number) === today.isoWeek();
 
     const fetchSuggestion = async () => {
         setIsSuggestionLoading(true);
@@ -58,6 +66,33 @@ export default function WeeklySummary() {
         
         } finally {
             setIsEntriesLoading(false);
+        }
+    };
+
+    const handleRegenerate = async () => {
+        if (!isCurrentWeek || isRegenerating) return;
+
+        setIsRegenerating(true);
+        setError(null)
+
+        try {
+            const response = await axios.post(`/journals/${year}/${week_number}/suggestion`, 
+                { regenerate: true }, //request body JSON sent to Flask
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            setSuggestion(response.data);
+        } catch (err) {
+            setError(
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Could not regenerate your summary. Please try again."
+            );
+        } finally {
+            setIsRegenerating(false);
         }
     };
 
@@ -105,7 +140,7 @@ export default function WeeklySummary() {
                 <Title order={1} mt={30} mb="md" ta="center">AI Suggestions for You</Title>
                 {error && <Alert color="red">{error}</Alert>}
 
-                {suggestion && !showForm ? (
+                {suggestion ? (
                     <>
                     {(() => {
                         let parsedTips = [];
@@ -135,20 +170,28 @@ export default function WeeklySummary() {
                         </>
                         );
                     })()}
-
-                    {/* <Button variant="light" mb="xl" onClick={() => setShowForm(true)}>
-                        🔄 Regenerate
-                    </Button> */}
+                    {isCurrentWeek && (
+                        <Button
+                            variant="light"
+                            mb="xl"
+                            onClick={handleRegenerate}
+                            loading={isRegenerating}
+                            disabled={isRegenerating}
+                        >
+                            🔄 Regenerate
+                        </Button>
+                    )}
                     </>
+
                 ) : (
                     <AiSuggestionForm
                         year={year}
                         week_number={week_number}
                         onSuccess={() => {
-                            fetchSuggestion();
-                            setShowForm(false); 
+                            fetchSuggestion(); 
                         }}
-                    />       
+                    />
+                           
                 )}
             </Stack>
         </Container>

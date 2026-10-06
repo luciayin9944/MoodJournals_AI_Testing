@@ -1,9 +1,11 @@
 ### OpenAi API
 
+from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import * 
 import os
+from datetime import date
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
@@ -36,11 +38,35 @@ class AiSuggestion(Resource):
         if len(entries) < 4:
             return {"message": "Not enough journal entries to generate summary (minimum 4 required)."}, 400
 
-        # The minimum also applies when a summary is already saved.
+
+        # Regeneration 
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return {"error": "Request body must be a JSON object."}, 400
+
+        regenerate = data.get("regenerate") is True  #data = {"regenerate": True}
+        current_year, current_week, _ = date.today().isocalendar()
+        is_current_week = (
+                year == current_year and week_number == current_week
+        )
+
+        if regenerate and not is_current_week:
+            return {
+                "error": "Only the current week's summary can be regenerated."
+            }, 403
+
         suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
-        if suggestion:
+
+        ## Ordinary requests can reuse the saved summary.
+        ## Regeneration requests continue to the existing AI generation code.
+        if suggestion and not regenerate:
             result = SuggestionSchema().dump(suggestion)
             return result, 200
+
+        #no regeneration:
+        # if suggestion:
+        #     result = SuggestionSchema().dump(suggestion)
+        #     return result, 200
 
         ##WRONG: entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
         entry_dicts = JournalEntrySchema(many=True).dump(entries)
@@ -79,18 +105,17 @@ class AiSuggestion(Resource):
             )
 
             ai_result = response.choices[0].message.content.strip()
-            validated = parse_and_validate_ai_response(ai_result)
-
-            validate_ai_content_safety(validated)
-            validate_basic_groundedness(validated, entry_dicts)
-            summary = validated["summary"]
-            tips = validated["self_care_tips"]
-            tips_text = json.dumps(tips)
 
             # parsed = json.loads(ai_result)
             # summary = parsed.get("summary", "")
             # tips = parsed.get("self_care_tips", [])
 
+            validated = parse_and_validate_ai_response(ai_result)
+            validate_ai_content_safety(validated)
+            validate_basic_groundedness(validated, entry_dicts)
+            summary = validated["summary"]
+            tips = validated["self_care_tips"]
+            tips_text = json.dumps(tips)
 
         
         except AIResponseValidationError:
@@ -100,21 +125,45 @@ class AiSuggestion(Resource):
         except Exception:
             return {"error": "OpenAI API request failed."}, 500
 
-        new_suggestion = Suggestion(
-            journal_id = week_journal.id, 
-            summary = summary,
-            selfcare_tips = tips_text
-        )
+        status_code = 200 if suggestion else 201
 
         try:
-            db.session.add(new_suggestion)
+            if suggestion:
+                # Regeneration: update the existing record.
+                suggestion.summary = summary
+                suggestion.selfcare_tips = tips_text
+            else:
+                # First generation: create a record.
+                suggestion = Suggestion(
+                    journal_id=week_journal.id,
+                    summary=summary,
+                    selfcare_tips=tips_text,
+                )
+                db.session.add(suggestion)
+
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return {"error": str(e)}, 500
+            return {"error": "Could not save the summary."}, 500
+
+        result = SuggestionSchema().dump(suggestion)
+        return result, status_code
+                
+        ##no Regeneration
+        # try:
+        #     new_suggestion = Suggestion(
+        #         journal_id = week_journal.id, 
+        #         summary = summary,
+        #         selfcare_tips = tips_text
+        #     )
+        #     db.session.add(new_suggestion)
+        #     db.session.commit()
+        # except Exception as e:
+        #     db.session.rollback()
+        #     return {"error": str(e)}, 500
         
-        result = SuggestionSchema().dump(new_suggestion)
-        return result, 201
+        # result = SuggestionSchema().dump(new_suggestion)
+        # return result, 201
     
 
 
