@@ -40,6 +40,8 @@ export default defineConfig({
         DATABASE_URI: e2eDatabaseUri,
         E2E_DATABASE_URI: e2eDatabaseUri,
         JWT_SECRET_KEY: 'e2e-test-secret',
+        // Browser tests mock AI responses; never use real provider credentials.
+        OPENAI_API_KEY: '',
       },
     },
     {

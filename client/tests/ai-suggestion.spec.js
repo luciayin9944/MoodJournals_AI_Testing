@@ -39,7 +39,7 @@ test('user can generate and view a mocked AI suggestion', async ({ page, loginAs
   });
 
   await loginAs('ai');
-  await page.getByRole('button', { name: 'Weekly AI Insights' }).click();
+  await page.getByRole('button', { name: 'Weekly Insights' }).click();
   await expect(page.getByText('No summary is available for this week.')).toBeVisible();
 
   await page.getByRole('button', { name: '✨ Generate AI Suggestions' }).click();

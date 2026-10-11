@@ -93,6 +93,7 @@ export default function LongTermInsights() {
               }}
               disabled={isLoading}
               clearable
+              clearButtonProps={{ "aria-label": "Clear question", "aria-hidden": false, tabIndex: 0 }}
               size="md"
               styles={{
                 label: {
