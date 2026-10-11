@@ -9,7 +9,7 @@ from services import embedding_service
 from services.exceptions import ProviderTimeoutError
 
 
-def test_create_entry_returns_created_entry(client, auth_headers, valid_entry_payload):
+def test_create(client, auth_headers, valid_entry_payload):
     response = client.post("/entries", json=valid_entry_payload, headers=auth_headers)
 
     assert response.status_code == 201
@@ -19,7 +19,7 @@ def test_create_entry_returns_created_entry(client, auth_headers, valid_entry_pa
     assert body["mood_tag"] == "Calm"
 
 
-def test_create_entry_creates_iso_week_journal(
+def test_create_week(
     client, auth_headers, user_a, valid_entry_payload
 ):
     response = client.post("/entries", json=valid_entry_payload, headers=auth_headers)
@@ -35,7 +35,7 @@ def test_create_entry_creates_iso_week_journal(
 
 
 @pytest.mark.parametrize("entry_date", [None, "not-a-date"])
-def test_create_entry_rejects_invalid_date(
+def test_bad_date(
     client, auth_headers, valid_entry_payload, entry_date
 ):
     valid_entry_payload["entry_date"] = entry_date
@@ -47,7 +47,7 @@ def test_create_entry_rejects_invalid_date(
 
 
 @pytest.mark.parametrize("mood_score", [0, 11])
-def test_create_entry_rejects_out_of_range_mood_score(
+def test_bad_score(
     client, auth_headers, valid_entry_payload, mood_score
 ):
     valid_entry_payload["mood_score"] = mood_score
@@ -59,7 +59,7 @@ def test_create_entry_rejects_out_of_range_mood_score(
     assert JournalEntry.query.count() == 0
 
 
-def test_create_entry_rejects_invalid_mood_tag(
+def test_bad_tag(
     client, auth_headers, valid_entry_payload
 ):
     valid_entry_payload["mood_tag"] = "Confused-but-not-allowed"
@@ -70,7 +70,7 @@ def test_create_entry_rejects_invalid_mood_tag(
     assert "Invalid mood tag" in response.get_json()["errors"][0]
 
 
-def test_create_entry_rejects_duplicate_date(
+def test_duplicate(
     client, auth_headers, make_entry, user_a, valid_entry_payload
 ):
     make_entry(user_a, date.fromisoformat(valid_entry_payload["entry_date"]))
@@ -81,7 +81,7 @@ def test_create_entry_rejects_duplicate_date(
     assert response.get_json()["error"] == "Entry for this date already exists."
 
 
-def test_edit_own_entry(client, auth_headers, make_entry, user_a):
+def test_edit(client, auth_headers, make_entry, user_a):
     entry = make_entry(user_a)
 
     response = client.patch(
@@ -95,7 +95,7 @@ def test_edit_own_entry(client, auth_headers, make_entry, user_a):
     assert response.get_json()["notes"] == "Updated notes."
 
 
-def test_delete_own_entry(client, auth_headers, make_entry, user_a):
+def test_delete(client, auth_headers, make_entry, user_a):
     entry = make_entry(user_a)
     entry_id = entry.id
 
@@ -106,7 +106,7 @@ def test_delete_own_entry(client, auth_headers, make_entry, user_a):
 
 
 @pytest.mark.parametrize("method", ["get", "patch", "delete"])
-def test_user_cannot_access_another_users_entry(
+def test_other_user(
     client, auth_headers, make_entry, user_b, method
 ):
     entry = make_entry(user_b)
@@ -177,7 +177,7 @@ def test_patch_keeps_embedding(
 
 
 @pytest.mark.parametrize("failure", ["provider", "storage"])
-def test_patch_embedding_failure(
+def test_patch_failure(
     client, auth_headers, embedded_entry, embedder, failure
 ):
     entry_id = embedded_entry.id
@@ -236,3 +236,37 @@ def test_patch_ignores_date(
     stored = db.session.get(JournalEntry, entry_id)
     assert stored.entry_date == old_date
     assert list(stored.embedding) == pytest.approx([0.25] * 1536)
+
+
+def test_post_embedding(client, auth_headers, valid_entry_payload, embedder):
+    response = client.post("/entries", json=valid_entry_payload, headers=auth_headers)
+
+    assert response.status_code == 201
+    body = response.get_json()
+    embedder.assert_called_once()
+    entry = embedder.call_args.args[0]
+    assert entry.id == body["id"]
+    assert entry.notes == valid_entry_payload["notes"]
+    assert "embedding" not in body
+    db.session.remove()
+    stored = db.session.get(JournalEntry, body["id"])
+    assert list(stored.embedding) == pytest.approx([0.5] * 1536)
+    assert stored.notes == valid_entry_payload["notes"]
+
+
+@pytest.mark.parametrize("failure", ["provider", "storage"])
+def test_post_failure(client, auth_headers, valid_entry_payload, embedder, failure):
+    if failure == "provider":
+        embedder.side_effect = ProviderTimeoutError("Timed out")
+    else:
+        # Failure in the second commit must not undo the saved journal entry.
+        embedder.return_value = [0.5]
+
+    response = client.post("/entries", json=valid_entry_payload, headers=auth_headers)
+
+    assert response.status_code == 201
+    embedder.assert_called_once()
+    db.session.remove()
+    stored = db.session.get(JournalEntry, response.get_json()["id"])
+    assert stored.notes == valid_entry_payload["notes"]
+    assert stored.embedding is None
