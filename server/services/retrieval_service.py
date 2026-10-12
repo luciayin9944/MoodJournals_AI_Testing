@@ -1,5 +1,8 @@
+## retrieval_service.py
+
 from models import *  
 from .embedding_service import generate_embedding
+from .exceptions import EmbeddingsUnavailableError
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -31,7 +34,6 @@ def retrieval_entries(user_id, question, time_range, top_k=10):
         .join(Journal)
         .filter(
             Journal.user_id==user_id,
-            JournalEntry.embedding.isnot(None),
             JournalEntry.entry_date <= end_date,
         )
     )
@@ -39,6 +41,19 @@ def retrieval_entries(user_id, question, time_range, top_k=10):
     if start_date is not None:
         query = query.filter(
             JournalEntry.entry_date >= start_date
+        )
+
+    if query.first() is None:
+        return []
+
+    embedded_query = query.filter(
+        JournalEntry.embedding.isnot(None)
+    )
+
+    # if entries exist, but none are embedded yet.
+    if embedded_query.first() is None:
+        raise EmbeddingsUnavailableError(
+            "Journal entries exist, but none have embeddings."
         )
 
     entries = (
@@ -55,7 +70,7 @@ def retrieval_entries(user_id, question, time_range, top_k=10):
     
 
     
-# ## for testing 
+# ## for manual testing 
 # def main():
 #     from app import create_app
 

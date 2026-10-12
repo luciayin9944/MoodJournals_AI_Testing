@@ -23,3 +23,7 @@ class ProviderRequestError(ProviderError):
 
 class ProviderResponseError(ProviderError):
     """The provider returned a response that failed application validation."""
+
+class EmbeddingsUnavailableError(Exception):
+    """Journal entries exist, but none have embeddings."""
+    

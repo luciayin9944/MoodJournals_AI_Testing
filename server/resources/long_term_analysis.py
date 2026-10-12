@@ -3,7 +3,7 @@ from flask import request, current_app
 from flask_restful import Resource
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from services import rag_service
-from services.exceptions import ProviderError, ProviderTimeoutError
+from services.exceptions import ProviderError, ProviderTimeoutError, EmbeddingsUnavailableError
 from ai_validation import AIResponseValidationError
 
 
@@ -47,6 +47,12 @@ class LongTermAnalysis(Resource):
         except AIResponseValidationError:
             current_app.logger.exception("Long-term analysis response was invalid")
             return {"error": "AI service returned an invalid response."}, 502
+
+        except EmbeddingsUnavailableError:
+            return {
+                "code": "embeddings_unavailable",
+                "error": "Your journal entries are not ready for analysis yet.",
+            }, 409
 
         except Exception:
             current_app.logger.exception("Unexpected long-term analysis failure")
