@@ -1256,7 +1256,7 @@ def seed_data():
     db.session.add(suggestion_39)
     db.session.commit()
 
-    ## === Week 40: September 28–October 4 (three entries, no suggestion) ===
+    ## === Week 40: September 28–October 4 ===
     journal_40 = Journal(
         week_number=40,
         year=2026,
@@ -1271,6 +1271,24 @@ def seed_data():
         JournalEntry(journal_id=journal_40.id, entry_date=date(2026, 10, 2), mood_tag="Happy", mood_score=8, notes="Met a friend for a walk in the park after work. Talking and spending time outside helped me unwind, and I came home feeling lighter than I had in the morning.")
     ]
     db.session.add_all(entries_40)
+    db.session.commit()
+
+    ## === Week 41: October 5–11  ===
+    journal_41 = Journal(
+        week_number=41,
+        year=2026,
+        user_id=user.id
+    )
+    db.session.add(journal_41)
+    db.session.commit()
+
+    entries_41 = [
+        JournalEntry(journal_id=journal_41.id, entry_date=date(2026, 10, 5), mood_tag="Anxious", mood_score=4, notes="Prepared to present my project progress at tomorrow's team meeting. I kept imagining difficult questions and found it hard to concentrate on other tasks."),
+        JournalEntry(journal_id=journal_41.id, entry_date=date(2026, 10, 6), mood_tag="Relieved", mood_score=7, notes="Finished the presentation with a few notes beside me. My teammates asked helpful questions, and I felt more comfortable once the conversation started."),
+        JournalEntry(journal_id=journal_41.id, entry_date=date(2026, 10, 7), mood_tag="Tired", mood_score=4, notes="Stayed up late catching up on unfinished work and only slept five hours. I felt sluggish this morning and needed extra time to finish simple tasks."),
+        JournalEntry(journal_id=journal_41.id, entry_date=date(2026, 10, 8), mood_tag="Relaxed", mood_score=8, notes="Took a gentle walk with a friend after work and talked about the week. Spending time outside helped me unwind, even though I still had a few tasks left for tomorrow.")
+    ]
+    db.session.add_all(entries_41)
     db.session.commit()
 
     print("✅ Database seeded successfully.")
