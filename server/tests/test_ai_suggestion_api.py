@@ -143,7 +143,8 @@ def test_unsafe_ai_response_is_not_saved(
 def test_existing_ai_suggestion_is_returned_without_provider_call(
     client, auth_headers, make_entry, user_a, current_week_dates, monkeypatch
 ):
-    entry = make_entry(user_a, current_week_dates[0])
+    entries = [make_entry(user_a, day) for day in current_week_dates[:4]]
+    entry = entries[0]
     saved = Suggestion(
         journal_id=entry.journal_id,
         summary="Previously generated summary.",
@@ -162,3 +163,7 @@ def test_existing_ai_suggestion_is_returned_without_provider_call(
     assert response.status_code == 200
     assert response.get_json()["summary"] == "Previously generated summary."
     assert completions.call_count == 0
+
+    response = client.get(_week_path(entry), headers=auth_headers)
+    assert response.status_code == 200
+    assert response.get_json()["summary"] == "Previously generated summary."

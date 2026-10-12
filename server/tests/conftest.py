@@ -20,6 +20,7 @@ def app():
     test_database_uri = os.getenv("TEST_DATABASE_URI", "sqlite:///:memory:")
     app = create_app({
         "TESTING": True,
+        "OPENAI_API_KEY": None,
         "SQLALCHEMY_DATABASE_URI": test_database_uri,
         "JWT_SECRET_KEY": "phase-1-test-secret",
     })

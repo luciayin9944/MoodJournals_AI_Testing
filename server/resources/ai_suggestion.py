@@ -1,9 +1,11 @@
 ### OpenAi API
 
+from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import * 
 import os
+from datetime import date
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
@@ -19,8 +21,8 @@ load_dotenv()
 
 
 def get_ai_client():
-    """Create the provider client lazily so tests can replace it safely."""
     return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 class AiSuggestion(Resource):
     @jwt_required()
@@ -31,18 +33,42 @@ class AiSuggestion(Resource):
         if not week_journal:
             return {"message": "No journal found for this week."}, 404
         
-        # if suggestion exist, return result. Don't generate new suggestions!
-        suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
-        if suggestion:
-            result = SuggestionSchema().dump(suggestion)
-            return result, 200
-        
         entries = JournalEntry.query.filter_by(journal_id=week_journal.id).order_by(JournalEntry.entry_date.asc()).all()
 
         if len(entries) < 4:
             return {"message": "Not enough journal entries to generate summary (minimum 4 required)."}, 400
 
-        ##WRONG; entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
+
+        # Regeneration 
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return {"error": "Request body must be a JSON object."}, 400
+
+        regenerate = data.get("regenerate") is True  #data = {"regenerate": True}
+        current_year, current_week, _ = date.today().isocalendar()
+        is_current_week = (
+                year == current_year and week_number == current_week
+        )
+
+        if regenerate and not is_current_week:
+            return {
+                "error": "Only the current week's summary can be regenerated."
+            }, 403
+
+        suggestion = Suggestion.query.filter_by(journal_id=week_journal.id).first()
+
+        ## Ordinary requests can reuse the saved summary.
+        ## Regeneration requests continue to the existing AI generation code.
+        if suggestion and not regenerate:
+            result = SuggestionSchema().dump(suggestion)
+            return result, 200
+
+        #no regeneration:
+        # if suggestion:
+        #     result = SuggestionSchema().dump(suggestion)
+        #     return result, 200
+
+        ##WRONG: entries_dicts = jsonify(JournalEntrySchema(many=True).dump(entries))
         entry_dicts = JournalEntrySchema(many=True).dump(entries)
         combined_text = "\n".join(
             [f"{entry['entry_date']}: {entry['notes']}" for entry in entry_dicts if entry.get("notes")]
@@ -70,39 +96,27 @@ class AiSuggestion(Resource):
 
         try:
             response = get_ai_client().chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a supportive and insightful AI assistant focused on emotional well-being."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7
             )
+
             ai_result = response.choices[0].message.content.strip()
 
-            # Previous inline parsing implementation retained for reference:
             # parsed = json.loads(ai_result)
             # summary = parsed.get("summary", "")
             # tips = parsed.get("self_care_tips", [])
 
-            # New implementation validates the complete AI response contract.
             validated = parse_and_validate_ai_response(ai_result)
-
-            # Previous Phase 3A behavior retained for reference:
-            # summary = validated["summary"]
-            # tips = validated["self_care_tips"]
-
-            # Phase 3B adds deterministic checks before valid output is saved.
-            # Previously, any contract-valid response proceeded directly to storage.
             validate_ai_content_safety(validated)
             validate_basic_groundedness(validated, entry_dicts)
             summary = validated["summary"]
             tips = validated["self_care_tips"]
-            # tips_text = "\n".join(tips)
             tips_text = json.dumps(tips)
 
-        # Previous JSON-only error handling retained for reference:
-        # except json.JSONDecodeError:
-        #     return {"error": "Failed to parse AI response as JSON."}, 500
         
         except AIResponseValidationError:
             return {"error": "AI response did not match the required format."}, 500
@@ -111,22 +125,45 @@ class AiSuggestion(Resource):
         except Exception:
             return {"error": "OpenAI API request failed."}, 500
 
-        ## add new suggestion to Suggestion table
-        new_suggestion = Suggestion(
-            journal_id = week_journal.id, 
-            summary = summary,
-            selfcare_tips = tips_text
-        )
+        status_code = 200 if suggestion else 201
 
         try:
-            db.session.add(new_suggestion)
+            if suggestion:
+                # Regeneration: update the existing record.
+                suggestion.summary = summary
+                suggestion.selfcare_tips = tips_text
+            else:
+                # First generation: create a record.
+                suggestion = Suggestion(
+                    journal_id=week_journal.id,
+                    summary=summary,
+                    selfcare_tips=tips_text,
+                )
+                db.session.add(suggestion)
+
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return {"error": str(e)}, 500
+            return {"error": "Could not save the summary."}, 500
+
+        result = SuggestionSchema().dump(suggestion)
+        return result, status_code
+                
+        ##no Regeneration
+        # try:
+        #     new_suggestion = Suggestion(
+        #         journal_id = week_journal.id, 
+        #         summary = summary,
+        #         selfcare_tips = tips_text
+        #     )
+        #     db.session.add(new_suggestion)
+        #     db.session.commit()
+        # except Exception as e:
+        #     db.session.rollback()
+        #     return {"error": str(e)}, 500
         
-        result = SuggestionSchema().dump(new_suggestion)
-        return result, 201
+        # result = SuggestionSchema().dump(new_suggestion)
+        # return result, 201
     
 
 
@@ -144,7 +181,8 @@ class AiSuggestion(Resource):
             ).first()
         )
 
-        if suggestion:
+        # Do not display a summary left behind by the old deletion logic.
+        if suggestion and JournalEntry.query.filter_by(journal_id=suggestion.journal_id).count() >= 4:
             return {
                 "summary": suggestion.summary,
                 "selfcare_tips": suggestion.selfcare_tips

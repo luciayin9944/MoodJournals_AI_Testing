@@ -32,6 +32,7 @@ matplotlib==3.10.5
 numpy==2.3.2
 openai==1.98.0
 packaging==25.0
+pgvector==0.4.2
 pillow==11.3.0
 psycopg2-binary==2.9.10
 pydantic==2.11.7

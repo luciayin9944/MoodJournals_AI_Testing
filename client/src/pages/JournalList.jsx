@@ -153,11 +153,10 @@ export default function JournalList() {
         </Flex>
         <Stack>
             {filteredJournals.map(journal => {
-                const weekKey = `${journal.year}-W${journal.week_number}`;
-                const startOfWeek = dayjs().year(journal.year).week(journal.week_number).startOf('isoWeek');
-                const endOfWeek = startOfWeek.endOf('isoWeek');
-
-                const dateRangeStr = `${startOfWeek.format('MMMM D, YYYY')} - ${endOfWeek.format('MMMM D, YYYY')}`;   
+              const weekKey = `${journal.year}-W${journal.week_number}`;
+              const startOfWeek = dayjs().year(Number(journal.year)).isoWeek(Number(journal.week_number)).startOf("isoWeek");
+              const endOfWeek = startOfWeek.endOf('isoWeek');
+              const dateRangeStr = `${startOfWeek.format('MMMM D, YYYY')} - ${endOfWeek.format('MMMM D, YYYY')}`;   
                 
             return (
                 <Paper key={weekKey} shadow="xs" p="md" withBorder radius="md">

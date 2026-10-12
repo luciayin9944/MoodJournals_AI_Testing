@@ -3,6 +3,7 @@
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from marshmallow import Schema, fields, validate
+from pgvector.sqlalchemy import VECTOR
 from config import db, bcrypt
 from datetime import datetime
 
@@ -53,9 +54,8 @@ class Journal(db.Model):
 
     @validates("year")
     def validate_year(self, key, value):
-        current_year = datetime.now().year
-        if value < current_year:
-            raise ValueError("Year must be the current year or later.")
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 9999:
+            raise ValueError("Year must be an integer between 1 and 9999.")
         return value
 
 
@@ -67,6 +67,8 @@ class JournalEntry(db.Model):
     notes = db.Column(db.Text)
     mood_score = db.Column(db.Integer, nullable=False)
     mood_tag = db.Column(db.String, nullable=False, server_default='Other')
+
+    embedding = db.Column(VECTOR(1536), nullable=True)
 
     journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'))
     journal = db.relationship('Journal', back_populates='journal_entries')

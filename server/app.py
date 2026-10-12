@@ -10,6 +10,7 @@ from resources.ai_suggestion import AiSuggestion
 from resources.auth import Signup, WhoAmI, Login
 from resources.entries import NewEntry, Entry, TodayEntry, MonthlyEntries, MonthlyEntriesAnalysis
 from resources.journals import JournalList, WeeklyJournal, WeeklyAnalysis, HasJournalEntries
+from resources.long_term_analysis import LongTermAnalysis
 
 
 
@@ -24,7 +25,7 @@ def create_app(test_config=None):
     CORS(app)
     db.init_app(app)
     bcrypt.init_app(app)
-    jwt.init_app(app)
+    jwt.init_app(app) 
     api = Api(app)
 
     # API resources
@@ -47,6 +48,9 @@ def create_app(test_config=None):
     api.add_resource(MonthlyEntries, '/entries/<int:year>/<int:month>')
     api.add_resource(MonthlyEntriesAnalysis, '/entries/<int:year>/<int:month>/analysis')
     api.add_resource(MonthlyWordCloud, '/entries/<int:year>/<int:month>/word_cloud')
+
+    # Analysis (long-term)
+    api.add_resource(LongTermAnalysis,'/analysis/long-term')
 
     @app.get('/health')
     def health_check():

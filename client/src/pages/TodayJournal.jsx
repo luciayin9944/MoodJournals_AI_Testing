@@ -30,6 +30,7 @@ export default function TodayJournal() {
 
   const fetchTodayEntry = async () => {
     setLoading(true);
+    setError(null) // clear old error
     try {
       const res = await axios.get(`/entries/today`, {
         headers: {

@@ -43,7 +43,7 @@ export default function AiSuggestionForm({ year, week_number, onSuccess }) {
             }
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || "Something went wrong.");
+            setError(err.response?.data?.error || err.response?.data?.message || "Something went wrong.");
         } finally {
             setIsLoading(false);
         }
